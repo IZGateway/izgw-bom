@@ -1,0 +1,10 @@
+target/**
+**/.mvn
+logs/**
+temp/**
+**/pom.xml.versionsBackup
+/target/
+**/.DS_Store
+**/.idea
+**/.env
+**/.m2
