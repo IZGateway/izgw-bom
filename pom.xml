@@ -7,7 +7,7 @@
 
     <groupId>gov.cdc.izgw</groupId>
     <artifactId>izgw-bom</artifactId>
-    <version>1.0.0-RELEASE</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>IZ Gateway Bill of Materials</name>
@@ -24,6 +24,8 @@
         <!-- Jackson JSON processing -->
         <jackson.version>2.20.0</jackson.version>
         <jackson.annotations.version>2.20</jackson.annotations.version>
+        <!-- STAX Processing (used in HAPI) -->
+        <stax2.version>4.2.2</stax2.version>
         <!-- Netty -->
         <netty.version>4.2.6.Final</netty.version>
         <!-- Logging -->
@@ -43,7 +45,7 @@
         <commons.text.version>1.14.0</commons.text.version>
         <commons.validator.version>1.9.0</commons.validator.version>
         <commons.beanutils.version>1.11.0</commons.beanutils.version>
-        
+        <commons.math3.version>3.6.1</commons.math3.version>
         <!-- HAPI -->
         <hapi.v2.version>2.6.0</hapi.v2.version>
         <hapi.fhir.version>8.4.0</hapi.fhir.version>
@@ -53,13 +55,19 @@
         <!-- Validation -->
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <hibernate.validator.version>8.0.3.Final</hibernate.validator.version>
+        
+        <!-- JWT Support -->
         <nimbus.jose.jwt.version>10.4.2</nimbus.jose.jwt.version>
+        <io.jsonwebtoken.version>0.11.5</io.jsonwebtoken.version>
         
         <mysql.version>9.3.0</mysql.version>
+        
         <aws.sdk.version>2.35.6</aws.sdk.version>
+        
         <javax.activation.version>1.2.0</javax.activation.version>
         <camel.version>4.13.0</camel.version>
 
+        <lombok.version>1.18.42</lombok.version>
         <!-- Maven plugin versions -->
         <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
         <maven.surefire.plugin.version>3.2.2</maven.surefire.plugin.version>
@@ -150,18 +158,6 @@
                 <groupId>org.apache.httpcomponents.client5</groupId>
                 <artifactId>httpclient5</artifactId>
                 <version>${httpclient.version}</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons.lang3.version}</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>${commons.io.version}</version>
             </dependency>
             
             <dependency>
@@ -265,19 +261,34 @@
                 <version>${opencsv.version}</version>
             </dependency>
             <dependency>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+                <version>${commons.beanutils.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>${commons.compress.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons.lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons.io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-math3</artifactId>
+                <version>${commons.math3.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>commons-validator</groupId>
                 <artifactId>commons-validator</artifactId>
                 <version>${commons.validator.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-beanutils</groupId>
-                <artifactId>commons-beanutils</artifactId>
-                <version>${commons.beanutils.version}</version>
             </dependency>
             <!-- ULID -->
             <dependency>
@@ -429,6 +440,11 @@
                 <version>${aws.sdk.version}</version>
             </dependency>
             <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>secretsmanager</artifactId>
+                <version>${aws.sdk.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.sun.activation</groupId>
                 <artifactId>javax.activation</artifactId>
                 <version>${javax.activation.version}</version>
@@ -446,7 +462,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.32</version>
+                <version>${lombok.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -492,11 +508,6 @@
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk18on</artifactId>
-                <version>1.77</version>
-            </dependency>
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
                 <artifactId>bc-fips</artifactId>
                 <version>2.1.1</version>
             </dependency>
@@ -510,6 +521,47 @@
                 <artifactId>bctls-fips</artifactId>
                 <version>2.1.20</version>
             </dependency>
+            
+            <dependency>
+                <groupId>org.codehaus.woodstox</groupId>
+                <artifactId>stax2-api</artifactId>
+                <version>${stax2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version></version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${io.jsonwebtoken.version}</version>
+            </dependency>
+      <dependency>
+          <groupId>io.jsonwebtoken</groupId>
+          <artifactId>jjwt-jackson</artifactId>
+          <version>0.11.5</version>
+      </dependency>
+      <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>com.github.seancfoley</groupId>
+          <artifactId>ipaddress</artifactId>
+          <version>5.5.1</version>
+      </dependency>
+
         </dependencies>
     </dependencyManagement>
 
