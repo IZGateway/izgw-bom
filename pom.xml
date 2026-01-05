@@ -7,7 +7,7 @@
 
     <groupId>gov.cdc.izgw</groupId>
     <artifactId>izgw-bom</artifactId>
-    <version>1.0.3-RELEASE</version>
+    <version>1.0.4-RELEASE</version>
     <packaging>pom</packaging>
 
     <name>IZ Gateway Bill of Materials</name>
@@ -105,7 +105,7 @@
                  section after the components that could depend upon them.
                  This is an approximate ordering of dependencies:
                  - Large Frameworks (e.g., AWS SDK, Spring, Hibernate)
-                 - Client and Smaller Frameworks (Netty, Apache HttpClient, Saxon)
+                 - Client and Smaller Frameworks (, Apache HttpClient, Saxon)
                  - Logging frameworks (slf4j, logback)
                  - Utilities (apache jackson)
                  - Libraries (e.g., commons-lang, commons-io)
