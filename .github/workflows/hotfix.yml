@@ -21,6 +21,7 @@ on:
 jobs:
   hotfix:
     uses: ./.github/workflows/_release_common.yml
+    secrets: inherit
     with:
       release-version: ${{ inputs.release-version }}
       release-type: hotfix
