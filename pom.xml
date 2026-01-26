@@ -27,10 +27,10 @@
         <stax2.version>4.2.2</stax2.version>
         <saxon.version>12.9</saxon.version>
         <!-- Netty -->
-        <netty.version>4.2.7.Final</netty.version>
+        <netty.version>4.2.8.Final</netty.version>
         <!-- Logging -->
         <slf4j.version>2.0.17</slf4j.version>
-        <logback.version>1.5.21</logback.version>
+        <logback.version>1.5.25</logback.version>
         <!-- Testing -->
         <junit.version>5.14.1</junit.version>
         <mockito.version>5.20.0</mockito.version>
