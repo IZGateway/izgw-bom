@@ -19,10 +19,10 @@
         <spring-framework.version>6.2.14</spring-framework.version>
         <spring-security.version>6.5.7</spring-security.version>
         <springdoc.version>2.8.14</springdoc.version>
-        <tomcat.version>10.1.49</tomcat.version>
+        <tomcat.version>10.1.52</tomcat.version>
         <!-- Jackson JSON processing -->
-        <jackson.version>2.20.1</jackson.version>
-        <jackson-annotations.version>2.20</jackson-annotations.version>
+        <jackson.version>2.21.1</jackson.version>
+        <jackson-annotations.version>2.21</jackson-annotations.version>
         <!-- STAX Processing (used in HAPI) -->
         <stax2.version>4.2.2</stax2.version>
         <saxon.version>12.9</saxon.version>
@@ -61,7 +61,7 @@
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.5.0</mysql.version>
         <aws-sdk.version>2.39.5</aws-sdk.version>
-        <camel.version>4.16.0</camel.version>
+        <camel.version>4.18.0</camel.version>
         <lombok.version>1.18.42</lombok.version>
         <!-- Maven plugin versions -->
         <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
