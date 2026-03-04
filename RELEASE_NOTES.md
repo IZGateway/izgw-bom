@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-03-04
+
+### Changes
+- IGDD-2572 - Bump tomcat, jackson, and camel ([#18](https://github.com/IZGateway/izgw-bom/pull/18))
+
 ## [1.2.0] - 2026-02-18
 
 ### Changes
@@ -17,4 +22,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated BOM to support izgw-core ([#5](https://github.com/IZGateway/izgw-bom/pull/5))
 - Implement IZ Gateway Bill of Materials (BOM) with dependency management and external properties support ([#1](https://github.com/IZGateway/izgw-bom/pull/1))
 - Update dependency versions to match highest used in izgw-core, izgw-hub, and izgw-transform projects ([#2](https://github.com/IZGateway/izgw-bom/pull/2))
-
