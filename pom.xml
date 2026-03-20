@@ -15,7 +15,7 @@
     
     <properties>
         <!-- Spring Boot and Framework versions -->
-        <spring-boot.version>3.5.11</spring-boot.version>
+        <spring-boot.version>3.5.8</spring-boot.version>
         <spring-framework.version>6.2.14</spring-framework.version>
         <spring-security.version>6.5.7</spring-security.version>
         <springdoc.version>2.8.14</springdoc.version>
@@ -292,6 +292,16 @@
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
                 <version>${tomcat.version}</version>
             </dependency>
             <!-- Apache HTTP Client -->
