@@ -63,6 +63,12 @@
         <aws-sdk.version>2.39.5</aws-sdk.version>
         <camel.version>4.16.0</camel.version>
         <lombok.version>1.18.42</lombok.version>
+        <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
+        <bc-fips.version>2.1.2</bc-fips.version>
+        <bcpkix-fips.version>2.1.9</bcpkix-fips.version>
+        <bctls-fips.version>2.1.20</bctls-fips.version>
+        <!-- IP Address parsing -->
+        <ipaddress.version>5.5.1</ipaddress.version>
         <!-- Maven plugin versions -->
         <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
@@ -273,21 +279,21 @@
                 <version>${stax2.version}</version>
             </dependency>
             
-            <!-- BC -->
+            <!-- BC FIPS — versions managed manually; see automation-exclusions.txt -->
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bc-fips</artifactId>
-                <version>2.1.2</version>
+                <version>${bc-fips.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcpkix-fips</artifactId>
-                <version>2.1.9</version>
+                <version>${bcpkix-fips.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bctls-fips</artifactId>
-                <version>2.1.20</version>
+                <version>${bctls-fips.version}</version>
             </dependency>
 
             <!-- Tomcat -->
@@ -609,7 +615,7 @@
             <dependency>
                 <groupId>com.github.seancfoley</groupId>
                 <artifactId>ipaddress</artifactId>
-                <version>5.5.1</version>
+                <version>${ipaddress.version}</version>
             </dependency>
             
             <dependency>
@@ -688,6 +694,18 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <version>3.6.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>2.18.0</version>
+                    <configuration>
+                        <allowMajorUpdates>false</allowMajorUpdates>
+                        <allowMinorUpdates>true</allowMinorUpdates>
+                        <allowIncrementalUpdates>true</allowIncrementalUpdates>
+                        <generateBackupPoms>false</generateBackupPoms>
+                        <rulesUri>file:///${project.basedir}/.github/versions-rules.xml</rulesUri>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

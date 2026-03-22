@@ -1,0 +1,20 @@
+# automation-exclusions.txt
+#
+# Libraries listed here are excluded from the nightly automated dependency update workflow.
+# The workflow will still REPORT their latest available version in the PR body for visibility,
+# but will NOT apply automatic version bumps.
+#
+# Format: groupId:artifactId  (one entry per line; wildcards not supported)
+# Lines beginning with # are ignored.
+#
+# To exclude a new library from automation, add a line here. No workflow changes required.
+#
+# -----------------------------------------------------------------------
+# Bouncy Castle FIPS
+# These libraries must be manually reviewed to ensure the new version
+# retains FIPS 140-2 certification before upgrading.
+# See: https://www.bouncycastle.org/fips-java/
+# -----------------------------------------------------------------------
+org.bouncycastle:bc-fips
+org.bouncycastle:bcpkix-fips
+org.bouncycastle:bctls-fips

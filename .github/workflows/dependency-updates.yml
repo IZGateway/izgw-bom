@@ -1,0 +1,117 @@
+name: Automated Dependency Updates
+
+on:
+  # schedule:
+    # Mon-Fri 2:00 AM ET (07:00 UTC)
+    # - cron: "0 7 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependency-updates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: maven
+          server-id: github
+
+      - name: Set up Maven 3.9.14
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.9.14
+
+      - name: Configure Maven authentication
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml <<EOF
+          <settings>
+            <servers>
+              <server>
+                <id>github</id>
+                <username>${{ github.actor }}</username>
+                <password>${{ secrets.GITHUB_TOKEN }}</password>
+              </server>
+              <server>
+                <id>github-bom</id>
+                <username>${{ github.actor }}</username>
+                <password>${{ secrets.GITHUB_TOKEN }}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+
+      - name: Read automation exclusions
+        run: |
+          # Strip comments and blank lines, join with comma for --excludes argument
+          EXCLUDES=$(grep -v '^\s*#' automation-exclusions.txt | grep -v '^\s*$' | paste -sd ',' -)
+          echo "EXCLUDES=$EXCLUDES" >> $GITHUB_ENV
+          echo "Excluding from automation: $EXCLUDES"
+
+      - name: Detect available property version updates
+        run: |
+          mvn -B versions:display-property-updates \
+            -DallowMajorUpdates=false \
+            -DallowMinorUpdates=true \
+            -DallowIncrementalUpdates=true \
+            -Dexcludes="${{ env.EXCLUDES }}" \
+            -DoutputFile=property-updates.txt
+          echo "--- Available property updates ---"
+          cat property-updates.txt || echo "(none found)"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Detect available plugin version updates
+        run: |
+          mvn -B versions:display-plugin-updates \
+            -DallowMajorUpdates=false \
+            -DallowMinorUpdates=true \
+            -DallowIncrementalUpdates=true \
+            -DoutputFile=plugin-updates.txt
+          echo "--- Available plugin updates ---"
+          cat plugin-updates.txt || echo "(none found)"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve BOM dependencies (synthetic validation project)
+        run: |
+          mvn -B dependency:resolve -f validation/pom.xml -q
+          echo "All BOM-declared versions resolved successfully."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply patch and minor version bumps
+        run: echo "TODO - run mvn versions:update-properties with exclusions and allowMajorUpdates=false"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate dependency resolution after updates
+        run: echo "TODO - run mvn dependency:resolve in validation/ to confirm nothing broken"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: CVE scan (dependency-check/Dependency-Check_Action)
+        run: echo "TODO - run dependency-check/Dependency-Check_Action against validation/ dependency tree; pass OSS_INDEX creds and dependency-suppression.xml; -DskipDependencyCheck=true on all mvn invocations"
+        env:
+          OSS_INDEX_USERNAME: ${{ secrets.OSS_INDEX_USERNAME }}
+          OSS_INDEX_PASSWORD: ${{ secrets.OSS_INDEX_PASSWORD }}
+
+      - name: Open pull request
+        run: echo "TODO - gh pr create with version bump table, CVE summary, excluded libs status, and major bump flags; branch name security-updates-$(date +'%Y%m%d-%H-%M')"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send email notification
+        run: echo "TODO - send email via AWS SES (dawidd6/action-send-mail) only if PR was created"
+        env:
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
