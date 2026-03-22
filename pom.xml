@@ -68,6 +68,8 @@
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>3.5.4</maven-failsafe-plugin.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
+        <!-- Java compiler target — child projects override this via <maven.compiler.release> -->
+        <maven.compiler.release>21</maven.compiler.release>
     </properties>
     <distributionManagement>
         <repository>
@@ -658,9 +660,7 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.14.1</version>
                     <configuration>
-                        <source>${maven.compiler.source}</source>
-                        <target>${maven.compiler.target}</target>
-                        <release>${maven.compiler.target}</release>
+                        <release>${maven.compiler.release}</release>
                         <parameters>true</parameters>
                     </configuration>
                 </plugin>
