@@ -76,6 +76,11 @@ jobs:
           fi
           echo "All dependencyManagement versions are property-backed."
 
+      - name: Install BOM to local repository
+        run: mvn -B install -DskipDependencyCheck=true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Resolve BOM dependencies (synthetic validation project)
         run: mvn -B dependency:resolve -f validation/pom.xml -q
         env:
