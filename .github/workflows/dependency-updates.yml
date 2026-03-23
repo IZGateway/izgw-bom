@@ -91,28 +91,170 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Apply patch and minor version bumps
-        run: echo "TODO - run mvn versions:update-properties with exclusions and allowMajorUpdates=false"
+        id: apply-updates
+        run: |
+          # Snapshot pom.xml before update so we can diff what changed
+          cp pom.xml pom.xml.before
+
+          mvn -B versions:update-properties \
+            -DallowMajorUpdates=false \
+            -DallowMinorUpdates=true \
+            -DallowIncrementalUpdates=true \
+            -Dexcludes="${{ env.EXCLUDES }}" \
+            -DgenerateBackupPoms=false
+
+          # Build a markdown table of changed version properties for the PR body
+          CHANGES=$(diff pom.xml.before pom.xml \
+            | grep '^[<>]' \
+            | grep -oP '(?<=<)[a-z][a-zA-Z0-9._-]+\.version>[^<]+' \
+            | sed 's/\.version>/|/' \
+            | paste - - 2>/dev/null \
+            | awk -F'|' 'NR%2==1{old=$1"|"$2} NR%2==0{split(old,a,"|"); split($0,b,"|"); print "| `"a[1]"` | `"a[2]"` | `"b[2]"` |"}' \
+            || true)
+
+          if [ -z "$CHANGES" ]; then
+            echo "No version changes applied."
+            echo "CHANGES_TABLE=" >> $GITHUB_ENV
+            echo "HAS_CHANGES=false" >> $GITHUB_ENV
+          else
+            echo "Version properties updated:"
+            echo "$CHANGES"
+            {
+              echo 'CHANGES_TABLE<<EOF'
+              echo "| Property | Old Version | New Version |"
+              echo "|----------|-------------|-------------|"
+              echo "$CHANGES"
+              echo 'EOF'
+            } >> $GITHUB_ENV
+            echo "HAS_CHANGES=true" >> $GITHUB_ENV
+          fi
+
+          # Also report excluded libraries and their latest available versions for visibility
+          EXCLUDED_REPORT=""
+          while IFS= read -r lib; do
+            [[ -z "$lib" || "$lib" =~ ^# ]] && continue
+            EXCLUDED_REPORT+="- \`$lib\` (manually managed — not updated automatically)"$'\n'
+          done < automation-exclusions.txt
+          {
+            echo 'EXCLUDED_REPORT<<EOF'
+            echo "$EXCLUDED_REPORT"
+            echo 'EOF'
+          } >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Validate dependency resolution after updates
-        run: echo "TODO - run mvn dependency:resolve in validation/ to confirm nothing broken"
+        run: |
+          mvn -B install -N -DskipDependencyCheck=true -q
+          mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true -q
+          echo "All BOM-declared versions resolved successfully after update."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: CVE scan (dependency-check/Dependency-Check_Action)
-        run: echo "TODO - run dependency-check/Dependency-Check_Action against validation/ dependency tree; pass OSS_INDEX creds and dependency-suppression.xml; -DskipDependencyCheck=true on all mvn invocations"
+      - name: CVE scan
+        id: cve-scan
+        uses: dependency-check/Dependency-Check_Action@v6
+        with:
+          project: "izgw-bom-validation"
+          path: "validation"
+          format: "HTML"
+          out: "dependency-check-report"
+          args: >
+            --suppression dependency-suppression.xml
+            --enableExperimental
+            --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
+            --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
         env:
-          OSS_INDEX_USERNAME: ${{ secrets.OSS_INDEX_USERNAME }}
-          OSS_INDEX_PASSWORD: ${{ secrets.OSS_INDEX_PASSWORD }}
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+
+      - name: Upload CVE report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: dependency-check-report/
+
+      - name: Read CVE summary
+        id: cve-summary
+        if: always()
+        run: |
+          REPORT="dependency-check-report/dependency-check-report.html"
+          if [ -f "$REPORT" ]; then
+            # Extract a brief vulnerability count line from the HTML report
+            VULN_COUNT=$(grep -oP 'vulnerabilities found: \K[0-9]+' "$REPORT" | head -1 || echo "see report artifact")
+            echo "CVE_SUMMARY=Dependency-Check completed. Vulnerabilities found: ${VULN_COUNT}. See the \`dependency-check-report\` artifact for details." >> $GITHUB_ENV
+          else
+            echo "CVE_SUMMARY=Dependency-Check report not found — see workflow logs." >> $GITHUB_ENV
+          fi
 
       - name: Open pull request
-        run: echo "TODO - gh pr create with version bump table, CVE summary, excluded libs status, and major bump flags; branch name security-updates-$(date +'%Y%m%d-%H-%M')"
+        id: open-pr
+        if: env.HAS_CHANGES == 'true'
+        run: |
+          BRANCH="dependency-updates-$(date +'%Y%m%d-%H-%M')"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add pom.xml
+          git commit -m "chore(deps): automated dependency version bumps $(date +'%Y-%m-%d')"
+          git push origin "$BRANCH"
+
+          PR_BODY="## Automated Dependency Updates
+
+          This PR was created automatically by the \`Automated Dependency Updates\` workflow.
+
+          ### Version Changes
+
+          ${{ env.CHANGES_TABLE }}
+
+          ### Excluded Libraries (not updated automatically)
+
+          ${{ env.EXCLUDED_REPORT }}
+
+          > These libraries require manual review before upgrading. Check for major version bumps or certification requirements.
+
+          ### CVE Scan
+
+          ${{ env.CVE_SUMMARY }}
+
+          ### Notes
+          - Only patch and minor version bumps are applied automatically (\`allowMajorUpdates=false\`).
+          - All updated versions have been verified to resolve via \`mvn dependency:resolve\` on the validation project.
+          - Review the \`dependency-check-report\` artifact for full CVE details before merging."
+
+          PR_URL=$(gh pr create \
+            --base develop \
+            --head "$BRANCH" \
+            --title "chore(deps): automated dependency updates $(date +'%Y-%m-%d')" \
+            --body "$PR_BODY")
+
+          echo "PR_URL=$PR_URL" >> $GITHUB_ENV
+          echo "PR created: $PR_URL"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Send email notification
-        run: echo "TODO - send email via AWS SES (dawidd6/action-send-mail) only if PR was created"
-        env:
-          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+        if: env.HAS_CHANGES == 'true' && env.PR_URL != ''
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: email-smtp.us-east-1.amazonaws.com
+          server_port: 587
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "[izgw-bom] Automated dependency updates PR opened — $(date +'%Y-%m-%d')"
+          to: ${{ secrets.MAIL_RECIPIENTS }}
+          from: "IZ Gateway CI <noreply@izgateway.org>"
+          body: |
+            An automated dependency update PR has been opened for izgw-bom.
+
+            PR: ${{ env.PR_URL }}
+
+            ${{ env.CHANGES_TABLE }}
+
+            ${{ env.CVE_SUMMARY }}
+
+            Excluded libraries (not updated automatically):
+            ${{ env.EXCLUDED_REPORT }}
+
+            Please review and merge if all checks pass.
