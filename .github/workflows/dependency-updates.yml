@@ -90,6 +90,74 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # -----------------------------------------------------------------------
+      # PRE-UPDATE PHASE: capture baseline state before any changes
+      # -----------------------------------------------------------------------
+
+      - name: Capture pre-update dependency tree
+        run: |
+          mvn -B dependency:tree -f validation/pom.xml -DskipDependencyCheck=true \
+            2>&1 | tee dependency-tree-pre.log
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Detect outdated transitive dependencies
+        run: |
+          echo "--- Outdated transitive/direct dependency versions ---"
+          mvn -B versions:display-dependency-updates \
+            -f validation/pom.xml \
+            -DallowMajorUpdates=false \
+            -DallowMinorUpdates=true \
+            -DallowIncrementalUpdates=true \
+            -DskipDependencyCheck=true \
+            2>&1 | tee dependency-updates-pre.log \
+            | grep -E 'The following|->|\[INFO\] *$' || echo "(none found)"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pre-update CVE scan
+        id: cve-scan-pre
+        uses: dependency-check/Dependency-Check_Action@main
+        continue-on-error: true
+        timeout-minutes: 10
+        with:
+          project: "izgw-bom-validation-pre-update"
+          path: "validation"
+          format: "HTML"
+          out: "dependency-check-report-pre"
+          args: >
+            --suppression /github/workspace/dependency-suppression.xml
+            --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
+            --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
+            --failOnCVSS 7
+            --disableNuspec
+            --disableNugetconf
+            --disableAssembly
+        env:
+          JAVA_HOME: /opt/jdk
+
+      - name: Upload pre-update CVE report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report-pre-update
+          path: dependency-check-report-pre/
+
+      - name: Read pre-update CVE summary
+        if: always()
+        run: |
+          REPORT="dependency-check-report-pre/dependency-check-report.html"
+          if [ -f "$REPORT" ]; then
+            VULN_COUNT=$(grep -oP 'vulnerabilities found: \K[0-9]+' "$REPORT" | head -1 || echo "see report artifact")
+            echo "CVE_SUMMARY_PRE=Pre-update scan: ${VULN_COUNT} vulnerabilities found. See the \`dependency-check-report-pre-update\` artifact." >> $GITHUB_ENV
+          else
+            echo "CVE_SUMMARY_PRE=Pre-update CVE report not found — see workflow logs." >> $GITHUB_ENV
+          fi
+
+      # -----------------------------------------------------------------------
+      # APPLY PHASE: bump property-backed versions and detect unfixed transitives
+      # -----------------------------------------------------------------------
+
       - name: Apply patch and minor version bumps
         id: apply-updates
         run: |
@@ -141,8 +209,102 @@ jobs:
             echo "$EXCLUDED_REPORT"
             echo 'EOF'
           } >> $GITHUB_ENV
+
+          # ---- Auto-fix transitive dependencies that have no property override ----
+          #
+          # Parse dependency-updates-pre.log for lines of the form:
+          #   [INFO]   groupId:artifactId ... oldVersion -> newVersion
+          # For each, check whether any existing property in pom.xml already
+          # governs that artifactId (i.e. ${artifactId.version} appears in pom.xml).
+          # If not, derive a property name and inject both the <property> entry and
+          # a <dependencyManagement> entry (no <scope>, letting Maven narrow naturally).
+          # Property name rule:
+          #   1. Try artifactId.version
+          #   2. If that key already exists (different groupId), use groupId.artifactId.version
+          #
+          # Install xmlstarlet for XML-safe pom.xml editing
+          sudo apt-get install -qq -y xmlstarlet > /dev/null
+
+          AUTO_FIXED_TRANSITIVES=""
+          MANUAL_TRANSITIVES=""
+
+          while IFS= read -r line; do
+            # Match lines like: [INFO]   groupId:artifactId ... oldVer -> newVer
+            if echo "$line" | grep -qP '\[INFO\]\s+\S+:\S+\s+\S+\s+->\s+\S+'; then
+              GROUP_ARTIFACT=$(echo "$line" | grep -oP '(?<=\[INFO\]\s{3})\S+:\S+' | head -1)
+              [ -z "$GROUP_ARTIFACT" ] && continue
+              GROUP_ID=$(echo "$GROUP_ARTIFACT" | cut -d: -f1)
+              ARTIFACT_ID=$(echo "$GROUP_ARTIFACT" | cut -d: -f2)
+              NEW_VERSION=$(echo "$line" | grep -oP '(?<=->\s)\S+' | head -1)
+              [ -z "$NEW_VERSION" ] && continue
+
+              # Skip if already governed by an existing property
+              # (any ${*.version} reference in pom.xml for this artifactId)
+              EXISTING_PROP=$(grep -oP "(?<=\\\$\{)[a-z][a-zA-Z0-9._-]+\.version(?=\})" pom.xml \
+                | while IFS= read -r p; do
+                    grep -qF "<${ARTIFACT_ID}>" pom.xml && \
+                    grep -qF "\${$p}" pom.xml && echo "$p" || true
+                  done | head -1 || true)
+              [ -n "$EXISTING_PROP" ] && continue
+
+              # Derive property name: prefer artifactId.version, fall back to groupId.artifactId.version
+              PROP_NAME="${ARTIFACT_ID}.version"
+              if grep -qF "<${PROP_NAME}>" pom.xml; then
+                PROP_NAME="${GROUP_ID}.${ARTIFACT_ID}.version"
+              fi
+
+              # Insert <PROP_NAME>NEW_VERSION</PROP_NAME> before </properties>
+              if xmlstarlet ed --inplace \
+                  -s "/project/properties" -t elem -n "${PROP_NAME}" -v "${NEW_VERSION}" \
+                  pom.xml 2>/dev/null; then
+
+                # Insert <dependency> into <dependencyManagement><dependencies> before </dependencies>
+                xmlstarlet ed --inplace \
+                  -s "/project/dependencyManagement/dependencies" -t elem -n "dependency" -v "" \
+                  -s "/project/dependencyManagement/dependencies/dependency[last()]" -t elem -n "groupId" -v "${GROUP_ID}" \
+                  -s "/project/dependencyManagement/dependencies/dependency[last()]" -t elem -n "artifactId" -v "${ARTIFACT_ID}" \
+                  -s "/project/dependencyManagement/dependencies/dependency[last()]" -t elem -n "version" -v "\${${PROP_NAME}}" \
+                  pom.xml 2>/dev/null && \
+                AUTO_FIXED_TRANSITIVES+="| \`${GROUP_ID}:${ARTIFACT_ID}\` | \`${PROP_NAME}\` | \`${NEW_VERSION}\` |"$'\n' || \
+                MANUAL_TRANSITIVES+="- \`${GROUP_ARTIFACT}\` → \`${NEW_VERSION}\` — XML edit failed; manual entry required"$'\n'
+              else
+                MANUAL_TRANSITIVES+="- \`${GROUP_ARTIFACT}\` → \`${NEW_VERSION}\` — property insert failed; manual entry required"$'\n'
+              fi
+            fi
+          done < dependency-updates-pre.log
+
+          {
+            echo 'AUTO_FIXED_TRANSITIVES<<EOF'
+            if [ -n "$AUTO_FIXED_TRANSITIVES" ]; then
+              echo "| Artifact | Property Added | Version |"
+              echo "|----------|----------------|---------|"
+              echo "$AUTO_FIXED_TRANSITIVES"
+            else
+              echo "_None — all transitives are already property-backed._"
+            fi
+            echo 'EOF'
+          } >> $GITHUB_ENV
+
+          {
+            echo 'MANUAL_TRANSITIVES<<EOF'
+            if [ -n "$MANUAL_TRANSITIVES" ]; then
+              echo "$MANUAL_TRANSITIVES"
+            else
+              echo "_None._"
+            fi
+            echo 'EOF'
+          } >> $GITHUB_ENV
+
+          # If any transitives were auto-fixed, mark that we have changes to commit
+          if [ -n "$AUTO_FIXED_TRANSITIVES" ]; then
+            echo "HAS_CHANGES=true" >> $GITHUB_ENV
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # -----------------------------------------------------------------------
+      # POST-UPDATE PHASE: validate and verify fixes
+      # -----------------------------------------------------------------------
 
       - name: Validate dependency resolution after updates
         run: |
@@ -152,18 +314,40 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: CVE scan
-        id: cve-scan
+      - name: Capture post-update dependency tree and diff
+        run: |
+          mvn -B dependency:tree -f validation/pom.xml -DskipDependencyCheck=true \
+            2>&1 | tee dependency-tree-post.log
+          echo "--- Dependency tree diff (pre vs post update) ---"
+          TREE_DIFF=$(diff dependency-tree-pre.log dependency-tree-post.log || true)
+          if [ -z "$TREE_DIFF" ]; then
+            echo "No dependency tree changes."
+            echo "TREE_DIFF_SUMMARY=_No dependency tree changes._" >> $GITHUB_ENV
+          else
+            echo "$TREE_DIFF"
+            {
+              echo 'TREE_DIFF_SUMMARY<<EOF'
+              echo '```diff'
+              echo "$TREE_DIFF"
+              echo '```'
+              echo 'EOF'
+            } >> $GITHUB_ENV
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Post-update CVE scan
+        id: cve-scan-post
         uses: dependency-check/Dependency-Check_Action@main
         continue-on-error: true
         timeout-minutes: 10
         with:
-          project: "izgw-bom-validation"
+          project: "izgw-bom-validation-post-update"
           path: "validation"
           format: "HTML"
-          out: "dependency-check-report"
+          out: "dependency-check-report-post"
           args: >
-            --suppression dependency-suppression.xml
+            --suppression /github/workspace/dependency-suppression.xml
             --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
             --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
             --failOnCVSS 7
@@ -173,12 +357,23 @@ jobs:
         env:
           JAVA_HOME: /opt/jdk
 
-      - name: Upload CVE report artifact
+      - name: Upload post-update CVE report artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: dependency-check-report
-          path: dependency-check-report/
+          name: dependency-check-report-post-update
+          path: dependency-check-report-post/
+
+      - name: Read post-update CVE summary
+        if: always()
+        run: |
+          REPORT="dependency-check-report-post/dependency-check-report.html"
+          if [ -f "$REPORT" ]; then
+            VULN_COUNT=$(grep -oP 'vulnerabilities found: \K[0-9]+' "$REPORT" | head -1 || echo "see report artifact")
+            echo "CVE_SUMMARY_POST=Post-update scan: ${VULN_COUNT} vulnerabilities found. See the \`dependency-check-report-post-update\` artifact." >> $GITHUB_ENV
+          else
+            echo "CVE_SUMMARY_POST=Post-update CVE report not found — see workflow logs." >> $GITHUB_ENV
+          fi
 
       - name: Upload debug artifacts on failure
         if: failure()
@@ -192,12 +387,16 @@ jobs:
             pr-body.md
             property-updates.log
             plugin-updates.log
+            dependency-updates-pre.log
+            dependency-tree-pre.log
+            dependency-tree-post.log
             resolve-pre-install.log
             resolve-pre-validation.log
             apply-updates.log
             resolve-post-install.log
             resolve-post-validation.log
-            dependency-check-report/
+            dependency-check-report-pre/
+            dependency-check-report-post/
 
       - name: Open pull request
         id: open-pr
@@ -211,16 +410,32 @@ jobs:
           git commit -m "chore(deps): automated dependency version bumps $(date +'%Y-%m-%d')"
           git push origin "$BRANCH"
 
-          # Write PR body to a file to avoid bash interpreting backticks and
-          # multi-line env vars inside a quoted string.
           cat > pr-body.md <<'PRBODY'
           ## Automated Dependency Updates
 
           This PR was created automatically by the `Automated Dependency Updates` workflow.
 
-          ### Version Changes
+          ### Version Changes (property-backed)
 
           CHANGES_TABLE_PLACEHOLDER
+
+          ### Transitive Dependencies Auto-fixed
+
+          AUTO_FIXED_TRANSITIVES_PLACEHOLDER
+
+          > These transitives had no existing property override. A new `<properties>` entry and
+          > `<dependencyManagement>` entry were added automatically for each.
+
+          ### Transitives Requiring Manual Action
+
+          MANUAL_TRANSITIVES_PLACEHOLDER
+
+          > These could not be patched automatically. Each requires a manual `<properties>` entry
+          > and `<dependencyManagement>` entry in the BOM.
+
+          ### Dependency Tree Changes
+
+          TREE_DIFF_SUMMARY_PLACEHOLDER
 
           ### Excluded Libraries (not updated automatically)
 
@@ -228,21 +443,28 @@ jobs:
 
           > These libraries require manual review before upgrading. Check for major version bumps or certification requirements.
 
-          ### CVE Scan
+          ### CVE Scan Results
 
-          CVE_SUMMARY_PLACEHOLDER
+          | Phase | Result |
+          |-------|--------|
+          | Pre-update | CVE_SUMMARY_PRE_PLACEHOLDER |
+          | Post-update | CVE_SUMMARY_POST_PLACEHOLDER |
+
+          > See the `dependency-check-report-pre-update` and `dependency-check-report-post-update` artifacts for full details.
 
           ### Notes
           - Only patch and minor version bumps are applied automatically (`allowMajorUpdates=false`).
           - All updated versions have been verified to resolve via `mvn dependency:resolve` on the validation project.
-          - Review the `dependency-check-report` artifact for full CVE details before merging.
+          - Transitives that could not be auto-fixed are flagged above and require a manual BOM entry.
           PRBODY
 
-          # Substitute placeholders with the actual env var values now that
-          # the file is written and bash quoting is no longer a concern.
           sed -i "s|CHANGES_TABLE_PLACEHOLDER|${CHANGES_TABLE}|" pr-body.md
+          sed -i "s|AUTO_FIXED_TRANSITIVES_PLACEHOLDER|${AUTO_FIXED_TRANSITIVES}|" pr-body.md
+          sed -i "s|MANUAL_TRANSITIVES_PLACEHOLDER|${MANUAL_TRANSITIVES}|" pr-body.md
+          sed -i "s|TREE_DIFF_SUMMARY_PLACEHOLDER|${TREE_DIFF_SUMMARY}|" pr-body.md
           sed -i "s|EXCLUDED_REPORT_PLACEHOLDER|${EXCLUDED_REPORT}|" pr-body.md
-          sed -i "s|CVE_SUMMARY_PLACEHOLDER|${CVE_SUMMARY}|" pr-body.md
+          sed -i "s|CVE_SUMMARY_PRE_PLACEHOLDER|${CVE_SUMMARY_PRE}|" pr-body.md
+          sed -i "s|CVE_SUMMARY_POST_PLACEHOLDER|${CVE_SUMMARY_POST}|" pr-body.md
 
           PR_URL=$(gh pr create \
             --base develop \
@@ -274,7 +496,14 @@ jobs:
 
             ${{ env.CHANGES_TABLE }}
 
-            ${{ env.CVE_SUMMARY }}
+            Transitive dependencies auto-fixed:
+            ${{ env.AUTO_FIXED_TRANSITIVES }}
+
+            Pre-update CVE scan:  ${{ env.CVE_SUMMARY_PRE }}
+            Post-update CVE scan: ${{ env.CVE_SUMMARY_POST }}
+
+            Transitives requiring manual action:
+            ${{ env.MANUAL_TRANSITIVES }}
 
             Excluded libraries (not updated automatically):
             ${{ env.EXCLUDED_REPORT }}
