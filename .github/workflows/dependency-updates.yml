@@ -411,66 +411,16 @@ jobs:
           git commit -m "chore(deps): automated dependency version bumps $(date +'%Y-%m-%d')"
           git push origin "$BRANCH"
 
-          cat > pr-body.md <<'PRBODY'
-          ## Automated Dependency Updates
-
-          This PR was created automatically by the `Automated Dependency Updates` workflow.
-
-          ### Version Changes (property-backed)
-
-          CHANGES_TABLE_PLACEHOLDER
-
-          ### Transitive Dependencies Auto-fixed
-
-          AUTO_FIXED_TRANSITIVES_PLACEHOLDER
-
-          > These transitives had no existing property override. A new `<properties>` entry and
-          > `<dependencyManagement>` entry were added automatically for each.
-
-          ### Transitives Requiring Manual Action
-
-          MANUAL_TRANSITIVES_PLACEHOLDER
-
-          > These could not be patched automatically. Each requires a manual `<properties>` entry
-          > and `<dependencyManagement>` entry in the BOM.
-
-          ### Dependency Tree Changes
-
-          TREE_DIFF_SUMMARY_PLACEHOLDER
-
-          ### Excluded Libraries (not updated automatically)
-
-          EXCLUDED_REPORT_PLACEHOLDER
-
-          > These libraries require manual review before upgrading. Check for major version bumps or certification requirements.
-
-          ### CVE Scan Results
-
-          | Phase | Result |
-          |-------|--------|
-          | Pre-update | CVE_SUMMARY_PRE_PLACEHOLDER |
-          | Post-update | CVE_SUMMARY_POST_PLACEHOLDER |
-
-          > See the `dependency-check-report-pre-update` and `dependency-check-report-post-update` artifacts for full details.
-
-          ### Notes
-          - Only patch and minor version bumps are applied automatically (`allowMajorUpdates=false`).
-          - All updated versions have been verified to resolve via `mvn dependency:resolve` on the validation project.
-          - Transitives that could not be auto-fixed are flagged above and require a manual BOM entry.
-          PRBODY
-
-          # Use envsubst for placeholder substitution — handles newlines, pipes,
-          # backticks and other special characters that break sed delimiters.
-          # Rename env vars to match the placeholder names exactly.
-          export CHANGES_TABLE_PLACEHOLDER="${CHANGES_TABLE}"
-          export AUTO_FIXED_TRANSITIVES_PLACEHOLDER="${AUTO_FIXED_TRANSITIVES}"
-          export MANUAL_TRANSITIVES_PLACEHOLDER="${MANUAL_TRANSITIVES}"
-          export TREE_DIFF_SUMMARY_PLACEHOLDER="${TREE_DIFF_SUMMARY}"
-          export EXCLUDED_REPORT_PLACEHOLDER="${EXCLUDED_REPORT}"
-          export CVE_SUMMARY_PRE_PLACEHOLDER="${CVE_SUMMARY_PRE}"
-          export CVE_SUMMARY_POST_PLACEHOLDER="${CVE_SUMMARY_POST}"
-          envsubst < pr-body.md > pr-body-final.md
-          mv pr-body-final.md pr-body.md
+          # Use the checked-in template and envsubst for variable substitution —
+          # handles newlines, pipes, backticks and other special characters that break sed delimiters.
+          export CHANGES_TABLE="${CHANGES_TABLE}"
+          export AUTO_FIXED_TRANSITIVES="${AUTO_FIXED_TRANSITIVES}"
+          export MANUAL_TRANSITIVES="${MANUAL_TRANSITIVES}"
+          export TREE_DIFF_SUMMARY="${TREE_DIFF_SUMMARY}"
+          export EXCLUDED_REPORT="${EXCLUDED_REPORT}"
+          export CVE_SUMMARY_PRE="${CVE_SUMMARY_PRE}"
+          export CVE_SUMMARY_POST="${CVE_SUMMARY_POST}"
+          envsubst < .github/workflows/pr-body-template.md > pr-body.md
 
           PR_URL=$(gh pr create \
             --base develop \
@@ -493,7 +443,7 @@ jobs:
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
           subject: "[izgw-bom] Automated dependency updates PR opened — $(date +'%Y-%m-%d')"
-          to: ${{ secrets.MAIL_RECIPIENTS }}
+          to: ${{ secrets.MAIL_RECIPIENTS }}, kboone@ainq.com
           from: "IZ Gateway CI <noreply@izgateway.org>"
           body: |
             An automated dependency update PR has been opened for izgw-bom.
