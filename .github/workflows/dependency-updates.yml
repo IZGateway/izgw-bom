@@ -189,6 +189,7 @@ jobs:
           path: |
             pom.xml
             pom.xml.before
+            pr-body.md
             property-updates.log
             plugin-updates.log
             resolve-pre-install.log
@@ -210,34 +211,44 @@ jobs:
           git commit -m "chore(deps): automated dependency version bumps $(date +'%Y-%m-%d')"
           git push origin "$BRANCH"
 
-          PR_BODY="## Automated Dependency Updates
+          # Write PR body to a file to avoid bash interpreting backticks and
+          # multi-line env vars inside a quoted string.
+          cat > pr-body.md <<'PRBODY'
+          ## Automated Dependency Updates
 
-          This PR was created automatically by the \`Automated Dependency Updates\` workflow.
+          This PR was created automatically by the `Automated Dependency Updates` workflow.
 
           ### Version Changes
 
-          ${{ env.CHANGES_TABLE }}
+          CHANGES_TABLE_PLACEHOLDER
 
           ### Excluded Libraries (not updated automatically)
 
-          ${{ env.EXCLUDED_REPORT }}
+          EXCLUDED_REPORT_PLACEHOLDER
 
           > These libraries require manual review before upgrading. Check for major version bumps or certification requirements.
 
           ### CVE Scan
 
-          ${{ env.CVE_SUMMARY }}
+          CVE_SUMMARY_PLACEHOLDER
 
           ### Notes
-          - Only patch and minor version bumps are applied automatically (\`allowMajorUpdates=false\`).
-          - All updated versions have been verified to resolve via \`mvn dependency:resolve\` on the validation project.
-          - Review the \`dependency-check-report\` artifact for full CVE details before merging."
+          - Only patch and minor version bumps are applied automatically (`allowMajorUpdates=false`).
+          - All updated versions have been verified to resolve via `mvn dependency:resolve` on the validation project.
+          - Review the `dependency-check-report` artifact for full CVE details before merging.
+          PRBODY
+
+          # Substitute placeholders with the actual env var values now that
+          # the file is written and bash quoting is no longer a concern.
+          sed -i "s|CHANGES_TABLE_PLACEHOLDER|${CHANGES_TABLE}|" pr-body.md
+          sed -i "s|EXCLUDED_REPORT_PLACEHOLDER|${EXCLUDED_REPORT}|" pr-body.md
+          sed -i "s|CVE_SUMMARY_PLACEHOLDER|${CVE_SUMMARY}|" pr-body.md
 
           PR_URL=$(gh pr create \
             --base develop \
             --head "$BRANCH" \
             --title "chore(deps): automated dependency updates $(date +'%Y-%m-%d')" \
-            --body "$PR_BODY")
+            --body-file pr-body.md)
 
           echo "PR_URL=$PR_URL" >> $GITHUB_ENV
           echo "PR created: $PR_URL"
