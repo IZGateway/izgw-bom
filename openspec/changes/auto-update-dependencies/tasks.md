@@ -1,23 +1,24 @@
 # Tasks: Automated Maven Dependency Updates
 
-**Status:** Not Started — Pending proposal approval  
-**Created:** 2026-03-22
+**Status:** In Progress  
+**Created:** 2026-03-22  
+**Updated:** 2026-03-23
 
 ## Summary
 
 | Task | Description | Est. | Status |
 |------|-------------|------|--------|
 | 0 | Property-back all hardcoded versions in pom.xml | 0.5h | ✅ Done |
-| 1 | Synthetic validation project | 1h | ❌ Not started |
-| 2 | Publish/validate workflow (`publish.yml`) | 1.5h | ❌ Not started |
-| 3 | Nightly dependency update workflow | 3h | ❌ Not started |
-| 4 | Repository secrets & permissions | 0.5h | ✅ Done |
-| 5 | Documentation | 1h | ❌ Not started |
+| 1 | Synthetic validation project | 1h | ✅ Done |
+| 2 | Nightly dependency update workflow | 3h | ✅ Done (schedule pending activation) |
+| 3 | Repository secrets & permissions | 0.5h | ✅ Done |
+| 4 | Documentation | 1h | ❌ Not started |
 
-**Total Estimated Effort:** ~7.5 hours
+**Total Estimated Effort:** ~6 hours
 
 **Note:** The release workflow (`release.yml` / `_release_common.yml`) already exists and is fully
-implemented. No changes are being made to it.
+implemented. No changes are being made to it. Validation checks (dependency resolve, CVE scan) run
+nightly via the dependency update workflow — no pre-publish validation step is added to `publish.yml`.
 
 ---
 

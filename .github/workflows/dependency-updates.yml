@@ -459,13 +459,18 @@ jobs:
           - Transitives that could not be auto-fixed are flagged above and require a manual BOM entry.
           PRBODY
 
-          sed -i "s|CHANGES_TABLE_PLACEHOLDER|${CHANGES_TABLE}|" pr-body.md
-          sed -i "s|AUTO_FIXED_TRANSITIVES_PLACEHOLDER|${AUTO_FIXED_TRANSITIVES}|" pr-body.md
-          sed -i "s|MANUAL_TRANSITIVES_PLACEHOLDER|${MANUAL_TRANSITIVES}|" pr-body.md
-          sed -i "s|TREE_DIFF_SUMMARY_PLACEHOLDER|${TREE_DIFF_SUMMARY}|" pr-body.md
-          sed -i "s|EXCLUDED_REPORT_PLACEHOLDER|${EXCLUDED_REPORT}|" pr-body.md
-          sed -i "s|CVE_SUMMARY_PRE_PLACEHOLDER|${CVE_SUMMARY_PRE}|" pr-body.md
-          sed -i "s|CVE_SUMMARY_POST_PLACEHOLDER|${CVE_SUMMARY_POST}|" pr-body.md
+          # Use envsubst for placeholder substitution — handles newlines, pipes,
+          # backticks and other special characters that break sed delimiters.
+          # Rename env vars to match the placeholder names exactly.
+          export CHANGES_TABLE_PLACEHOLDER="${CHANGES_TABLE}"
+          export AUTO_FIXED_TRANSITIVES_PLACEHOLDER="${AUTO_FIXED_TRANSITIVES}"
+          export MANUAL_TRANSITIVES_PLACEHOLDER="${MANUAL_TRANSITIVES}"
+          export TREE_DIFF_SUMMARY_PLACEHOLDER="${TREE_DIFF_SUMMARY}"
+          export EXCLUDED_REPORT_PLACEHOLDER="${EXCLUDED_REPORT}"
+          export CVE_SUMMARY_PRE_PLACEHOLDER="${CVE_SUMMARY_PRE}"
+          export CVE_SUMMARY_POST_PLACEHOLDER="${CVE_SUMMARY_POST}"
+          envsubst < pr-body.md > pr-body-final.md
+          mv pr-body-final.md pr-body.md
 
           PR_URL=$(gh pr create \
             --base develop \
