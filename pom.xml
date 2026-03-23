@@ -47,8 +47,8 @@
         <commons-math3.version>3.6.1</commons-math3.version>
         <!-- HAPI -->
         <hapi-v2.version>2.6.0</hapi-v2.version>
-        <hapi-fhir.version>8.6.0</hapi-fhir.version>
-        <hl7-fhir.version>6.7.7</hl7-fhir.version>
+        <hapi-fhir.version>8.8.1</hapi-fhir.version>
+        <hl7-fhir.version>6.9.0</hl7-fhir.version>
         <opencsv.version>5.12.0</opencsv.version>
         <!-- ulidj -->
         <ulidj.version>1.1.0</ulidj.version>
@@ -292,6 +292,16 @@
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
                 <version>${tomcat.version}</version>
             </dependency>
             <!-- Apache HTTP Client -->
@@ -552,6 +562,66 @@
                 <groupId>ca.uhn.hapi.fhir</groupId>
                 <artifactId>hapi-fhir-caching-caffeine</artifactId>
                 <version>${hapi-fhir.version}</version>
+            </dependency>
+
+            <!-- HL7 FHIR Core libraries (transitive from hapi-fhir-structures-*)
+                 Pinned here to override HAPI 8.8.1's transitive 6.7.9 which has issues
+                 Review when bumping hapi-fhir.version: check what fhir_core_version the new
+                 HAPI version uses and update hl7-fhir.version accordingly. -->
+            <dependency>
+                <groupId>ca.uhn.hapi.fhir</groupId>
+                <artifactId>org.hl7.fhir.convertors</artifactId>
+                <version>${hl7-fhir.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi.fhir</groupId>
+                <artifactId>org.hl7.fhir.dstu2</artifactId>
+                <version>${hl7-fhir.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi.fhir</groupId>
+                <artifactId>org.hl7.fhir.dstu2016may</artifactId>
+                <version>${hl7-fhir.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi.fhir</groupId>
+                <artifactId>org.hl7.fhir.dstu3</artifactId>
+                <version>${hl7-fhir.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi.fhir</groupId>
+                <artifactId>org.hl7.fhir.dstu3.support</artifactId>
+                <version>${hl7-fhir.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi.fhir</groupId>
+                <artifactId>org.hl7.fhir.model</artifactId>
+                <version>${hl7-fhir.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi.fhir</groupId>
+                <artifactId>org.hl7.fhir.r4</artifactId>
+                <version>${hl7-fhir.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi.fhir</groupId>
+                <artifactId>org.hl7.fhir.r4b</artifactId>
+                <version>${hl7-fhir.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi.fhir</groupId>
+                <artifactId>org.hl7.fhir.r5</artifactId>
+                <version>${hl7-fhir.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi.fhir</groupId>
+                <artifactId>org.hl7.fhir.utilities</artifactId>
+                <version>${hl7-fhir.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi.fhir</groupId>
+                <artifactId>org.hl7.fhir.validation</artifactId>
+                <version>${hl7-fhir.version}</version>
             </dependency>
 
             <dependency>
