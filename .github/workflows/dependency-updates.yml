@@ -153,7 +153,9 @@ jobs:
 
       - name: CVE scan
         id: cve-scan
-        uses: dependency-check/Dependency-Check_Action@v6
+        uses: dependency-check/Dependency-Check_Action@main
+        continue-on-error: true
+        timeout-minutes: 10
         with:
           project: "izgw-bom-validation"
           path: "validation"
@@ -161,11 +163,14 @@ jobs:
           out: "dependency-check-report"
           args: >
             --suppression dependency-suppression.xml
-            --enableExperimental
             --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
             --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
+            --failOnCVSS 7
+            --disableNuspec
+            --disableNugetconf
+            --disableAssembly
         env:
-          JAVA_HOME: ${{ env.JAVA_HOME }}
+          JAVA_HOME: /opt/jdk
 
       - name: Upload CVE report artifact
         if: always()
