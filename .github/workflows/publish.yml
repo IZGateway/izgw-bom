@@ -77,7 +77,9 @@ jobs:
           echo "All dependencyManagement versions are property-backed."
 
       - name: Resolve BOM dependencies (synthetic validation project)
-        run: mvn -B install dependency:resolve -pl validation -am -DskipDependencyCheck=true -q
+        run: |
+          mvn -B install -N -DskipDependencyCheck=true -q
+          mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true -q
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

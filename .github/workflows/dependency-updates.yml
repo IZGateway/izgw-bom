@@ -84,7 +84,8 @@ jobs:
 
       - name: Resolve BOM dependencies (synthetic validation project)
         run: |
-          mvn -B install dependency:resolve -pl validation -am -DskipDependencyCheck=true -q
+          mvn -B install -N -DskipDependencyCheck=true -q
+          mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true -q
           echo "All BOM-declared versions resolved successfully."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
