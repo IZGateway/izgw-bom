@@ -59,33 +59,33 @@ jobs:
 
       - name: Detect available property version updates
         run: |
+          echo "--- Available property updates ---"
           mvn -B versions:display-property-updates \
             -DallowMajorUpdates=false \
             -DallowMinorUpdates=true \
             -DallowIncrementalUpdates=true \
             -Dexcludes="${{ env.EXCLUDES }}" \
-            -DoutputFile=property-updates.txt
-          echo "--- Available property updates ---"
-          cat property-updates.txt || echo "(none found)"
+            | tee property-updates.log \
+            | grep -E 'The following|->|\[INFO\] *$' || echo "(none found)"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Detect available plugin version updates
         run: |
+          echo "--- Available plugin updates ---"
           mvn -B versions:display-plugin-updates \
             -DallowMajorUpdates=false \
             -DallowMinorUpdates=true \
             -DallowIncrementalUpdates=true \
-            -DoutputFile=plugin-updates.txt
-          echo "--- Available plugin updates ---"
-          cat plugin-updates.txt || echo "(none found)"
+            | tee plugin-updates.log \
+            | grep -E 'The following|->|\[INFO\] *$' || echo "(none found)"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Resolve BOM dependencies (synthetic validation project)
         run: |
-          mvn -B install -N -DskipDependencyCheck=true -q
-          mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true -q
+          mvn -B install -N -DskipDependencyCheck=true 2>&1 | tee resolve-pre-install.log
+          mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true 2>&1 | tee resolve-pre-validation.log
           echo "All BOM-declared versions resolved successfully."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -101,7 +101,8 @@ jobs:
             -DallowMinorUpdates=true \
             -DallowIncrementalUpdates=true \
             -Dexcludes="${{ env.EXCLUDES }}" \
-            -DgenerateBackupPoms=false
+            -DgenerateBackupPoms=false \
+            2>&1 | tee apply-updates.log
 
           # Build a markdown table of changed version properties for the PR body
           CHANGES=$(diff pom.xml.before pom.xml \
@@ -145,8 +146,8 @@ jobs:
 
       - name: Validate dependency resolution after updates
         run: |
-          mvn -B install -N -DskipDependencyCheck=true -q
-          mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true -q
+          mvn -B install -N -DskipDependencyCheck=true 2>&1 | tee resolve-post-install.log
+          mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true 2>&1 | tee resolve-post-validation.log
           echo "All BOM-declared versions resolved successfully after update."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -179,18 +180,23 @@ jobs:
           name: dependency-check-report
           path: dependency-check-report/
 
-      - name: Read CVE summary
-        id: cve-summary
-        if: always()
-        run: |
-          REPORT="dependency-check-report/dependency-check-report.html"
-          if [ -f "$REPORT" ]; then
-            # Extract a brief vulnerability count line from the HTML report
-            VULN_COUNT=$(grep -oP 'vulnerabilities found: \K[0-9]+' "$REPORT" | head -1 || echo "see report artifact")
-            echo "CVE_SUMMARY=Dependency-Check completed. Vulnerabilities found: ${VULN_COUNT}. See the \`dependency-check-report\` artifact for details." >> $GITHUB_ENV
-          else
-            echo "CVE_SUMMARY=Dependency-Check report not found — see workflow logs." >> $GITHUB_ENV
-          fi
+      - name: Upload debug artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-logs
+          if-no-files-found: ignore
+          path: |
+            pom.xml
+            pom.xml.before
+            property-updates.log
+            plugin-updates.log
+            resolve-pre-install.log
+            resolve-pre-validation.log
+            apply-updates.log
+            resolve-post-install.log
+            resolve-post-validation.log
+            dependency-check-report/
 
       - name: Open pull request
         id: open-pr
