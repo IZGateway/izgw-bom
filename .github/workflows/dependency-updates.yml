@@ -103,6 +103,7 @@ jobs:
 
       - name: Detect outdated transitive dependencies
         run: |
+          set -o pipefail
           echo "--- Outdated transitive/direct dependency versions ---"
           mvn -B versions:display-dependency-updates \
             -f validation/pom.xml \
@@ -110,8 +111,8 @@ jobs:
             -DallowMinorUpdates=true \
             -DallowIncrementalUpdates=true \
             -DskipDependencyCheck=true \
-            2>&1 | tee dependency-updates-pre.log \
-            | grep -E 'The following|->|\[INFO\] *$' || echo "(none found)"
+            2>&1 | tee dependency-updates-pre.log
+          grep -E 'The following|->|\[INFO\] *$' dependency-updates-pre.log || echo "(none found)"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
