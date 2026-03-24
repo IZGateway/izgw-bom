@@ -1,4 +1,5 @@
 target/**
+validation/target/
 **/.mvn
 logs/**
 temp/**

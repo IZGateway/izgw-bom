@@ -1,8 +1,8 @@
 # Tasks: Automated Maven Dependency Updates
 
-**Status:** In Progress  
-**Created:** 2026-03-22  
-**Updated:** 2026-03-23
+**Status:** Complete
+**Created:** 2026-03-22
+**Updated:** 2026-03-24
 
 ## Summary
 
@@ -10,9 +10,10 @@
 |------|-------------|------|--------|
 | 0 | Property-back all hardcoded versions in pom.xml | 0.5h | ✅ Done |
 | 1 | Synthetic validation project | 1h | ✅ Done |
-| 2 | Nightly dependency update workflow | 3h | ✅ Done (schedule pending activation) |
-| 3 | Repository secrets & permissions | 0.5h | ✅ Done |
-| 4 | Documentation | 1h | ❌ Not started |
+| 2 | Publish / validation workflow | 1.5h | ✅ Done |
+| 3 | Nightly dependency update workflow | 3h | ✅ Done |
+| 4 | Repository secrets & permissions | 0.5h | ✅ Done |
+| 5 | Documentation | 1h | ✅ Done |
 
 **Total Estimated Effort:** ~6 hours
 
@@ -33,8 +34,8 @@ nightly via the dependency update workflow — no pre-publish validation step is
 
 ---
 
-### Task 1: Create Synthetic Validation Project
-**Estimated effort:** 1 hour
+### ~~Task 1: Create Synthetic Validation Project~~ ✅ DONE
+**Status:** Completed 2026-03-22
 
 **Description:**
 Create a minimal Maven project inside the repository (`validation/pom.xml`) whose sole purpose is
@@ -56,17 +57,17 @@ as the test harness for all three workflows.
 - Produce or publish any artifact
 
 **Acceptance Criteria:**
-- [ ] `validation/pom.xml` exists with `izgw-bom` as parent and `<packaging>pom</packaging>`
-- [ ] At least one dependency from each major library group is declared
-- [ ] No `src/` directory exists under `validation/`
-- [ ] `mvn dependency:resolve` passes when run from `validation/` using built-in `GITHUB_TOKEN` for GitHub Packages auth
-- [ ] `validation/target/` is listed in the root `.gitignore`
-- [ ] The project is NOT listed in the root POM's `<modules>` (not part of a reactor build)
+- [x] `validation/pom.xml` exists with `izgw-bom` as parent and `<packaging>pom</packaging>`
+- [x] At least one dependency from each major library group is declared
+- [x] No `src/` directory exists under `validation/`
+- [x] `mvn dependency:resolve` passes when run from `validation/` using built-in `GITHUB_TOKEN` for GitHub Packages auth
+- [x] `validation/target/` is listed in the root `.gitignore`
+- [x] The project is NOT listed in the root POM's `<modules>` (not part of a reactor build)
 
 ---
 
-### Task 2: Publish / Validation Workflow (`publish.yml`)
-**Estimated effort:** 1.5 hours
+### ~~Task 2: Publish / Validation Workflow (`publish.yml`)~~ ✅ DONE
+**Status:** Completed 2026-03-23
 
 **Description:**
 The existing `publish.yml` workflow already runs on every push and PR to `develop` and on
@@ -75,21 +76,22 @@ step — so that every dependency change is validated before it is published. No
 `pr-validate.yml` is needed.
 
 **Acceptance Criteria:**
-- [ ] Runs `mvn validate` on the root POM; fails on XML/schema errors
-- [ ] Fails if any `<version>` in `<dependencyManagement>` is a literal string rather than a `${property}` reference (grep/xmllint check)
-- [ ] Runs `mvn dependency:resolve` on `validation/pom.xml`; fails if any version is unresolvable
-- [ ] Validation steps run before `Build & Publish` so a bad POM is never published
-- [ ] Validation steps complete in under 3 minutes
-- [ ] Uses built-in `GITHUB_TOKEN` for GitHub Packages access (already wired in existing step)
+- [x] Runs `mvn validate` on the root POM; fails on XML/schema errors
+- [x] Fails if any `<version>` in `<dependencyManagement>` is a literal string rather than a `${property}` reference (grep/xmllint check)
+- [x] Runs `mvn dependency:resolve` on `validation/pom.xml`; fails if any version is unresolvable
+- [x] Validation steps run before `Build & Publish` so a bad POM is never published
+- [x] Validation steps complete in under 3 minutes
+- [x] Uses built-in `GITHUB_TOKEN` for GitHub Packages access (already wired in existing step)
 
 ---
 
-### Task 3: Nightly Dependency Update Workflow (`dependency-updates.yml`)
-**Estimated effort:** 3 hours
+### ~~Task 3: Nightly Dependency Update Workflow (`dependency-updates.yml`)~~ ✅ DONE
+**Status:** Completed 2026-03-24
 
 **Description:**
 Scheduled workflow that detects available version upgrades for BOM-managed library properties,
-applies patch/minor bumps, runs CVE scanning, and opens a PR with full context.
+applies patch/minor bumps, auto-fixes unmanaged transitive dependencies, runs CVE scanning, and
+opens a PR with full context.
 
 **Exclusion configuration:**
 The file `automation-exclusions.txt` at the repository root controls which `groupId:artifactId`
@@ -106,18 +108,19 @@ org.bouncycastle:bctls-fips
 ```
 
 **Acceptance Criteria:**
-- [ ] Triggers on schedule (Mon–Fri ~4 AM ET) and `workflow_dispatch`
-- [ ] Reads `automation-exclusions.txt`; skips listed `groupId:artifactId` entries
-- [ ] Uses `versions:update-properties` to apply patch/minor bumps only (no major bumps)
-- [ ] Includes excluded libraries and their latest available version in the PR body (visibility without automation)
-- [ ] Includes major-version-available libraries in the PR body as "manual review required"
-- [ ] Runs `mvn dependency:resolve` on `validation/pom.xml` after updates to confirm nothing broken
-- [ ] Runs OWASP Dependency-Check on effective dependency tree; includes CVE findings in PR body
-- [ ] Opens a PR only if updates or CVEs were found; exits cleanly otherwise
-- [ ] PR includes: version bump table, CVE summary, excluded libs status, major bumps section
-- [ ] Branch name: `security-updates-YYYYMMDD-HH-MM`
-- [ ] Applies `dependencies` label; also applies `security` label if CVEs are present
-- [ ] Uses `GITHUB_TOKEN` (built-in) for Maven auth and PR creation; `OSS_INDEX_USERNAME` / `OSS_INDEX_PASSWORD` for CVE scanning; `MAIL_USERNAME` / `MAIL_PASSWORD` for notifications
+- [x] Triggers on schedule (Mon–Fri 2:00 AM ET / 07:00 UTC) and `workflow_dispatch`
+- [x] Reads `automation-exclusions.txt`; skips listed `groupId:artifactId` entries
+- [x] Uses `versions:update-properties` to apply patch/minor bumps only (no major bumps)
+- [x] Runs `mvn dependency:resolve` on `validation/pom.xml` after updates to confirm nothing broken
+- [x] Runs OWASP Dependency-Check on effective dependency tree; includes CVE findings in PR body
+- [x] Opens a PR only if updates or CVEs were found; exits cleanly otherwise
+- [x] Detects outdated transitive dependencies via `versions:display-dependency-updates` on validation project
+- [x] Auto-fixes unmanaged transitives by adding `<property>` and `<dependencyManagement>` entries via `xmlstarlet`
+- [x] Transitives that fail auto-fix are flagged in the PR body for manual action
+- [x] PR includes: version bump table, transitive auto-fix table, manual transitives, dependency tree diff, CVE summary, excluded libs status
+- [x] Branch name: `dependency-updates-YYYYMMDD-HH-MM`
+- [x] Applies `dependencies` label; also applies `security` label if CVEs are present
+- [x] Uses `GITHUB_TOKEN` (built-in) for Maven auth and PR creation; `OSS_INDEX_USERNAME` / `OSS_INDEX_PASSWORD` for CVE scanning; `MAIL_USERNAME` / `MAIL_PASSWORD` for notifications
 
 ---
 
@@ -132,16 +135,13 @@ org.bouncycastle:bctls-fips
 
 ---
 
-### Task 5: Documentation
-**Estimated effort:** 1 hour
+### ~~Task 5: Documentation~~ ✅ DONE
+**Status:** Completed 2026-03-24
 
-**Description:**
-Update `README.md` so maintainers understand how to work with the new workflows.
-
-**Acceptance Criteria:**
-- [ ] `README.md` describes the two new workflows (`publish.yml` validation steps, `dependency-updates.yml`) and when each runs
-- [ ] Documents how to review a dependency update PR (checklist)
-- [ ] Documents how to add a library to `automation-exclusions.txt` and when to do so
-- [ ] Documents how to handle a major version flag in an update PR
-- [ ] Documents which secrets each workflow uses and that all are pre-existing (`GITHUB_TOKEN` built-in; `OSS_INDEX_*` and `MAIL_*` already configured org-wide)
-- [ ] Documents how to rotate `OSS_INDEX_*` and `MAIL_*` credentials if needed
+**Implemented:**
+- ✅ `README.md` describes the two new workflows (`publish.yml` validation steps, `dependency-updates.yml`) and when each runs
+- ✅ Documents how to review a dependency update PR (checklist)
+- ✅ Documents how to add a library to `automation-exclusions.txt` and when to do so
+- ✅ Documents how to handle a major version flag in an update PR
+- ✅ Documents which secrets each workflow uses and that all are pre-existing (`GITHUB_TOKEN` built-in; `OSS_INDEX_*` and `MAIL_*` already configured org-wide)
+- ✅ Documents how to rotate `OSS_INDEX_*` and `MAIL_*` credentials if needed

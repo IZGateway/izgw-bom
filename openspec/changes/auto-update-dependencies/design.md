@@ -344,12 +344,12 @@ dependency tree of the synthetic validation project. This covers all BOM-declare
   with:
     project: izgw-bom
     path: validation/
-    format: 'HTML,JSON'
+    format: 'HTML'
     out: 'reports'
     args: >
       --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
       --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
-      --failOnCVSS 0
+      --failOnCVSS 7
       --suppression ./dependency-suppression.xml
       --disableNuspec
       --disableNugetconf
@@ -357,12 +357,13 @@ dependency tree of the synthetic validation project. This covers all BOM-declare
 
 - name: Parse CVE report
   run: |
-    jq '[.dependencies[] | select(.vulnerabilities) |
-        {name: .fileName,
-         cves: [.vulnerabilities[].name],
-         severity: [.vulnerabilities[].severity]}]' \
-        reports/dependency-check-report.json > cve-findings.json
-    echo "CVE_COUNT=$(jq length cve-findings.json)" >> $GITHUB_ENV
+    REPORT="reports/dependency-check-report.html"
+    if [ -f "$REPORT" ]; then
+      VULN_COUNT=$(grep -oP 'vulnerabilities found: \K[0-9]+' "$REPORT" | head -1 || echo "see report artifact")
+      echo "CVE_SUMMARY=Scan found ${VULN_COUNT} vulnerabilities. See report artifact." >> $GITHUB_ENV
+    else
+      echo "CVE_SUMMARY=CVE report not found — see workflow logs." >> $GITHUB_ENV
+    fi
 ```
 
 ### 7. Update Detection and Application
@@ -376,29 +377,7 @@ mvn versions:display-property-updates \
     -Dexcludes="$EXCLUDES" \
     -DoutputFile=property-updates.txt -q
 
-# 2. Detect available plugin version updates (for PR reporting)
-# Uses Maven 3.9.0 as the compatibility baseline (matches CI/CD runtime)
-mvn -B versions:display-plugin-updates \
-    -DallowMajorUpdates=false \
-    -DallowMinorUpdates=true \
-    -DallowIncrementalUpdates=true \
-    -DoutputFile=plugin-updates.txt
-
-# 3. Detect major-version-only updates (for PR reporting — not applied)
-mvn versions:display-property-updates \
-    -DallowMajorUpdates=true \
-    -DallowMinorUpdates=false \
-    -DallowIncrementalUpdates=false \
-    -Dexcludes="$EXCLUDES" \
-    -DoutputFile=major-updates.txt -q
-
-# 3. Detect latest versions of excluded libraries (for PR visibility)
-mvn versions:display-property-updates \
-    -DallowMajorUpdates=true \
-    -DinclEcludes="$EXCLUDES" \
-    -DoutputFile=excluded-updates.txt -q
-
-# 4. Apply patch/minor bumps
+# 2. Apply patch/minor bumps
 mvn versions:update-properties \
     -DallowMajorUpdates=false \
     -DallowMinorUpdates=true \
@@ -406,11 +385,29 @@ mvn versions:update-properties \
     -DgenerateBackupPoms=false \
     -Dexcludes="$EXCLUDES"
 
-# 5. Check if pom.xml actually changed
+# 3. Check if pom.xml actually changed
 git diff --quiet pom.xml && echo "NO_UPDATES=true" >> $GITHUB_ENV
 ```
 
-### 8. Post-Update Validation
+### 8. Transitive Dependency Auto-fix
+
+After applying property bumps, the workflow detects outdated transitive dependencies that are not
+yet governed by a property in the BOM. It uses `versions:display-dependency-updates` on the
+validation project to find transitives where a newer patch/minor version is available.
+
+For each unmanaged transitive:
+
+1. Check if the artifact is already governed by an existing `${*.version}` property. If so, skip.
+2. Derive a property name: prefer `artifactId.version`, fall back to `groupId.artifactId.version`
+   if that key already exists for a different group.
+3. Use `xmlstarlet` to inject a new `<property>` entry and a new `<dependencyManagement>` entry
+   into `pom.xml`.
+4. If the XML edit fails, flag the transitive for manual action in the PR body.
+
+This prevents the BOM from silently inheriting stale transitive versions from upstream BOMs.
+Auto-fixed transitives and those requiring manual action are reported separately in the PR body.
+
+### 9. Post-Update Validation
 
 After applying updates, confirm all bumped versions still resolve:
 
@@ -420,43 +417,44 @@ mvn dependency:resolve -f validation/pom.xml -q
 
 If this fails, the workflow aborts without opening a PR — a broken BOM is never proposed.
 
-### 9. Pull Request Content
+The workflow also captures dependency tree diffs (pre vs post update) to show exactly what
+changed in the transitive tree.
 
-The PR body is assembled from the outputs of steps 6–8:
+### 10. Pull Request Content
+
+The PR body is assembled from a checked-in template (`.github/workflows/pr-body-template.md`)
+using `envsubst` for variable substitution. It includes:
 
 ```markdown
-## Automated BOM Dependency Updates — YYYYMMDD-HH-MM
+## Automated Dependency Updates
 
-### Version Bumps Applied
-| Property | Old | New |
-|----------|-----|-----|
-| `spring-boot.version` | 3.4.0 | 3.4.1 |
-| ...                   | ...   | ...   |
+### Version Changes (property-backed)
+| Property | Old Version | New Version |
+|----------|-------------|-------------|
+| ...      | ...         | ...         |
 
-### Plugin Updates Available (not applied — manual review required)
-| Plugin | Current | Latest Compatible |
-|--------|---------|------------------|
-| `maven-compiler-plugin` | 3.13.0 | 3.14.1 |
-| ...                     | ...     | ...    |
+### Transitive Dependencies Auto-fixed
+| Artifact | Property Added | Version |
+|----------|----------------|---------|
+| ...      | ...            | ...     |
 
-### CVE Findings
-| Library | CVE | Severity | Fixed by update? |
-|---------|-----|----------|-----------------|
-| ...     | ... | ...      | ...             |
+### Transitives Requiring Manual Action
+- `groupId:artifactId` -> `version` — reason
 
-### Excluded Libraries (manual review)
-| Library | Current | Latest Available |
-|---------|---------|-----------------|
-| `bc-fips` | 2.1.2 | 2.1.3 |
-| ...       | ...   | ...   |
+### Dependency Tree Changes
+(diff of pre vs post update dependency trees)
 
-### Major Version Updates Available (not applied — manual review required)
-| Property | Current | Latest Major |
-|----------|---------|-------------|
-| ...      | ...     | ...         |
+### Excluded Libraries (not updated automatically)
+(list of libraries from automation-exclusions.txt)
+
+### CVE Scan Results
+| Phase | Result |
+|-------|--------|
+| Pre-update  | summary |
+| Post-update | summary |
 ```
 
-Branch name: `security-updates-YYYYMMDD-HH-MM`  
+Branch name: `dependency-updates-YYYYMMDD-HH-MM`  
 Labels: `dependencies` (always); `security` (if CVE_COUNT > 0)
 
 ### 10. Email Notification
