@@ -1,9 +1,9 @@
 name: Automated Dependency Updates
 
 on:
-  # schedule:
+  schedule:
     # Mon-Fri 2:00 AM ET (07:00 UTC)
-    # - cron: "0 7 * * 1-5"
+    - cron: "0 7 * * 1-5"
   workflow_dispatch:
 
 permissions:
@@ -384,6 +384,9 @@ jobs:
           if [ -f "$REPORT" ]; then
             VULN_COUNT=$(grep -oP 'vulnerabilities found: \K[0-9]+' "$REPORT" | head -1 || echo "see report artifact")
             echo "CVE_SUMMARY_POST=Post-update scan: ${VULN_COUNT} vulnerabilities found. See the \`dependency-check-report-post-update\` artifact." >> $GITHUB_ENV
+            if [ "$VULN_COUNT" -gt 0 ] 2>/dev/null; then
+              echo "HAS_CVES=true" >> $GITHUB_ENV
+            fi
           else
             echo "CVE_SUMMARY_POST=Post-update CVE report not found — see workflow logs." >> $GITHUB_ENV
           fi
@@ -434,11 +437,17 @@ jobs:
           export CVE_SUMMARY_POST="${CVE_SUMMARY_POST}"
           envsubst < .github/workflows/pr-body-template.md > pr-body.md
 
+          LABELS="dependencies"
+          if [ "$HAS_CVES" = "true" ]; then
+            LABELS="dependencies,security"
+          fi
+
           PR_URL=$(gh pr create \
             --base develop \
             --head "$BRANCH" \
             --title "chore(deps): automated dependency updates $(date +'%Y-%m-%d')" \
-            --body-file pr-body.md)
+            --body-file pr-body.md \
+            --label "$LABELS")
 
           echo "PR_URL=$PR_URL" >> $GITHUB_ENV
           echo "PR created: $PR_URL"

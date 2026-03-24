@@ -39,10 +39,15 @@ Triggered on schedule (Mon–Fri, ~4 AM ET) and via `workflow_dispatch`.
 - Reads `automation-exclusions.txt` to build the `excludes` list passed to the plugin — any
   `groupId:artifactId` listed there is skipped entirely
 - **Patch and minor** bumps: applied automatically to a branch, validated, then opened as a PR
-- **Major** bumps: listed in the PR description as "manual review required" items — never auto-applied
+- **Transitive dependency auto-fix**: after applying property bumps, runs `versions:display-dependency-updates`
+  on the validation project to detect outdated transitive dependencies that have no property override in the
+  BOM. For each, the workflow automatically adds a new `<property>` and `<dependencyManagement>` entry to
+  `pom.xml` using `xmlstarlet`. Transitives that cannot be auto-fixed are flagged in the PR body for manual
+  action. This keeps the BOM from silently inheriting stale transitive versions from upstream BOMs.
 - Runs OWASP Dependency-Check against the synthetic validation project's effective dependency tree
   to identify CVE-affected libraries; CVE findings are included in the PR body
-- PR includes: version bump table, CVE summary, links to changelogs/release notes where available
+- PR includes: version bump table, transitive auto-fix table, transitives requiring manual action,
+  dependency tree diff, CVE summary, and excluded library status
 - If no updates are found and no CVEs exist: workflow exits cleanly with no PR
 
 ### Workflow 3 — Release (`release.yml` / `_release_common.yml`)
