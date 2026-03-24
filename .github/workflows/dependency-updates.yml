@@ -173,14 +173,26 @@ jobs:
             -DgenerateBackupPoms=false \
             2>&1 | tee apply-updates.log
 
-          # Build a markdown table of changed version properties for the PR body
-          CHANGES=$(diff pom.xml.before pom.xml \
-            | grep '^[<>]' \
-            | grep -oP '(?<=<)[a-z][a-zA-Z0-9._-]+\.version>[^<]+' \
-            | sed 's/\.version>/|/' \
-            | paste - - 2>/dev/null \
-            | awk -F'|' 'NR%2==1{old=$1"|"$2} NR%2==0{split(old,a,"|"); split($0,b,"|"); print "| `"a[1]"` | `"a[2]"` | `"b[2]"` |"}' \
-            || true)
+          # Build a markdown table of changed version properties for the PR body.
+          # Parse the diff output into two associative arrays (old/new) keyed by
+          # property name so that columns never shift regardless of diff ordering.
+          declare -A OLD_VERS NEW_VERS
+          while IFS= read -r line; do
+            side="${line:0:1}"   # '<' = before, '>' = after
+            prop=$(echo "$line" | grep -oP '(?<=<)[a-z][a-zA-Z0-9._-]+(?=\.version>)')
+            ver=$(echo "$line"  | grep -oP '(?<=\.version>)[^<]+')
+            [ -z "$prop" ] || [ -z "$ver" ] && continue
+            if [ "$side" = "<" ]; then OLD_VERS["$prop"]="$ver"
+            else                        NEW_VERS["$prop"]="$ver"
+            fi
+          done < <(diff pom.xml.before pom.xml | grep '^[<>]')
+
+          CHANGES=""
+          for prop in "${!NEW_VERS[@]}"; do
+            old="${OLD_VERS[$prop]:-unknown}"
+            new="${NEW_VERS[$prop]}"
+            CHANGES+="| \`${prop}\` | \`${old}\` | \`${new}\` |"$'\n'
+          done
 
           if [ -z "$CHANGES" ]; then
             echo "No version changes applied."
