@@ -15,40 +15,40 @@
     
     <properties>
         <!-- Spring Boot and Framework versions -->
-        <spring-boot.version>3.5.8</spring-boot.version>
+        <spring-boot.version>3.5.12</spring-boot.version>
         <spring-framework.version>6.2.17</spring-framework.version>
-        <spring-security.version>6.5.7</spring-security.version>
-        <springdoc.version>2.8.14</springdoc.version>
-        <tomcat.version>10.1.52</tomcat.version>
+        <spring-security.version>6.5.9</spring-security.version>
+        <springdoc.version>2.8.16</springdoc.version>
+        <tomcat.version>10.1.53</tomcat.version>
         <!-- Jackson JSON processing -->
-        <jackson.version>2.21.1</jackson.version>
+        <jackson.version>2.21.2</jackson.version>
         <jackson-annotations.version>2.21</jackson-annotations.version>
         <!-- STAX Processing (used in HAPI) -->
         <stax2.version>4.2.2</stax2.version>
         <saxon.version>12.9</saxon.version>
         <!-- Netty -->
-        <netty.version>4.2.8.Final</netty.version>
+        <netty.version>4.2.10.Final</netty.version>
         <!-- Logging -->
-        <slf4j.version>2.0.17</slf4j.version>
-        <logback.version>1.5.25</logback.version>
+        <slf4j.version>2.1.0-alpha1</slf4j.version>
+        <logback.version>1.5.32</logback.version>
         <!-- Testing -->
-        <junit.version>5.14.1</junit.version>
-        <mockito.version>5.20.0</mockito.version>
-        <testcontainers.version>1.21.3</testcontainers.version>
+        <junit.version>5.14.3</junit.version>
+        <mockito.version>5.23.0</mockito.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
         <!-- HTTP Client -->
-        <httpclient.version>5.5.1</httpclient.version>
+        <httpclient.version>5.6</httpclient.version>
         <!-- Apache Commons -->
         <commons-lang3.version>3.20.0</commons-lang3.version>
         <commons-io.version>2.21.0</commons-io.version>
         <commons-compress.version>1.28.0</commons-compress.version>
-        <commons-text.version>1.14.0</commons-text.version>
+        <commons-text.version>1.15.0</commons-text.version>
         <commons-validator.version>1.10.1</commons-validator.version>
         <commons-beanutils.version>1.11.0</commons-beanutils.version>
         <commons-math3.version>3.6.1</commons-math3.version>
         <!-- HAPI -->
         <hapi-v2.version>2.6.0</hapi-v2.version>
         <hapi-fhir.version>8.8.1</hapi-fhir.version>
-        <hl7-fhir.version>6.9.0</hl7-fhir.version>
+        <hl7-fhir.version>6.9.2</hl7-fhir.version>
         <opencsv.version>5.12.0</opencsv.version>
         <!-- ulidj -->
         <ulidj.version>1.1.0</ulidj.version>
@@ -57,18 +57,18 @@
         <javax-activation.version>1.2.0</javax-activation.version>
         <hibernate-validator.version>8.0.3.Final</hibernate-validator.version>
         <!-- JWT Support -->
-        <nimbus-jose-jwt.version>10.6</nimbus-jose-jwt.version>
+        <nimbus-jose-jwt.version>10.8</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
-        <mysql.version>9.5.0</mysql.version>
-        <aws-sdk.version>2.39.5</aws-sdk.version>
+        <mysql.version>9.6.0</mysql.version>
+        <aws-sdk.version>2.42.19</aws-sdk.version>
         <camel.version>4.18.0</camel.version>
-        <lombok.version>1.18.42</lombok.version>
+        <lombok.version>1.18.44</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
         <bc-fips.version>2.1.2</bc-fips.version>
         <bcpkix-fips.version>2.1.9</bcpkix-fips.version>
         <bctls-fips.version>2.1.20</bctls-fips.version>
         <!-- IP Address parsing -->
-        <ipaddress.version>5.5.1</ipaddress.version>
+        <ipaddress.version>5.6.2</ipaddress.version>
         <!-- Maven plugin versions -->
         <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
