@@ -4,7 +4,7 @@
 # The workflow will still REPORT their latest available version in the PR body for visibility,
 # but will NOT apply automatic version bumps.
 #
-# Format: groupId:artifactId  (one entry per line; wildcards not supported)
+# Format: groupId:artifactId  (one entry per line; glob * supported for artifactId, e.g. org.example:*)
 # Lines beginning with # are ignored.
 #
 # To exclude a new library from automation, add a line here. No workflow changes required.

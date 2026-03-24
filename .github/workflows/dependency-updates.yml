@@ -254,7 +254,7 @@ jobs:
               # (any ${*.version} reference in pom.xml for this artifactId)
               EXISTING_PROP=$(grep -oP "(?<=\\\$\{)[a-z][a-zA-Z0-9._-]+\.version(?=\})" pom.xml \
                 | while IFS= read -r p; do
-                    grep -qF "<${ARTIFACT_ID}>" pom.xml && \
+                    grep -qF "<artifactId>${ARTIFACT_ID}</artifactId>" pom.xml && \
                     grep -qF "\${$p}" pom.xml && echo "$p" || true
                   done | head -1 || true)
               [ -n "$EXISTING_PROP" ] && continue
@@ -385,6 +385,7 @@ jobs:
             echo "CVE_SUMMARY_POST=Post-update scan: ${VULN_COUNT} vulnerabilities found. See the \`dependency-check-report-post-update\` artifact." >> $GITHUB_ENV
             if [ "$VULN_COUNT" -gt 0 ] 2>/dev/null; then
               echo "HAS_CVES=true" >> $GITHUB_ENV
+              echo "HAS_CHANGES=true" >> $GITHUB_ENV
             fi
           else
             echo "CVE_SUMMARY_POST=Post-update CVE report not found — see workflow logs." >> $GITHUB_ENV
