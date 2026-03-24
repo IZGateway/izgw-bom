@@ -726,7 +726,7 @@
                         <allowMinorUpdates>true</allowMinorUpdates>
                         <allowIncrementalUpdates>true</allowIncrementalUpdates>
                         <generateBackupPoms>false</generateBackupPoms>
-                        <rulesUri>file:///${project.basedir}/.github/versions-rules.xml</rulesUri>
+                        <rulesUri>file:///${maven.multiModuleProjectDirectory}/.github/versions-rules.xml</rulesUri>
                     </configuration>
                 </plugin>
             </plugins>
