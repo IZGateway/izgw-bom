@@ -110,7 +110,6 @@ jobs:
             -DallowMinorUpdates=true \
             -DallowIncrementalUpdates=true \
             -DskipDependencyCheck=true \
-            -DrulesUri="file:///${GITHUB_WORKSPACE}/.github/versions-rules.xml" \
             2>&1 | tee dependency-updates-pre.log \
             | grep -E 'The following|->|\[INFO\] *$' || echo "(none found)"
         env:
