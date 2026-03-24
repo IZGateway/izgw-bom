@@ -65,6 +65,7 @@ jobs:
             -DallowMinorUpdates=true \
             -DallowIncrementalUpdates=true \
             -Dexcludes="${{ env.EXCLUDES }}" \
+            -Dversions.rulesUri="file://${GITHUB_WORKSPACE}/.github/versions-rules.xml" \
             | tee property-updates.log \
             | grep -E 'The following|->|\[INFO\] *$' || echo "(none found)"
         env:
@@ -77,6 +78,7 @@ jobs:
             -DallowMajorUpdates=false \
             -DallowMinorUpdates=true \
             -DallowIncrementalUpdates=true \
+            -Dversions.rulesUri="file://${GITHUB_WORKSPACE}/.github/versions-rules.xml" \
             | tee plugin-updates.log \
             | grep -E 'The following|->|\[INFO\] *$' || echo "(none found)"
         env:
@@ -85,8 +87,8 @@ jobs:
       - name: Resolve BOM dependencies (synthetic validation project)
         run: |
           mvn -B install -N -DskipDependencyCheck=true 2>&1 | tee resolve-pre-install.log
-          mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true 2>&1 | tee resolve-pre-validation.log
-          echo "All BOM-declared versions resolved successfully."
+          mvn -B package -f validation/pom.xml -DskipDependencyCheck=true 2>&1 | tee resolve-pre-validation.log
+          echo "All BOM-declared versions resolved and JARs staged successfully."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -110,7 +112,7 @@ jobs:
             -DallowMinorUpdates=true \
             -DallowIncrementalUpdates=true \
             -DskipDependencyCheck=true \
-            -DrulesUri="file://${GITHUB_WORKSPACE}/.github/versions-rules.xml" \
+            -Dversions.rulesUri="file://${GITHUB_WORKSPACE}/.github/versions-rules.xml" \
             2>&1 | tee dependency-updates-pre.log \
             | grep -E 'The following|->|\[INFO\] *$' || echo "(none found)"
         env:
@@ -123,7 +125,7 @@ jobs:
         timeout-minutes: 10
         with:
           project: "izgw-bom-validation-pre-update"
-          path: "validation"
+          path: "validation/target/dependency"
           format: "HTML"
           out: "dependency-check-report-pre"
           args: >
@@ -171,6 +173,7 @@ jobs:
             -DallowIncrementalUpdates=true \
             -Dexcludes="${{ env.EXCLUDES }}" \
             -DgenerateBackupPoms=false \
+            -Dversions.rulesUri="file://${GITHUB_WORKSPACE}/.github/versions-rules.xml" \
             2>&1 | tee apply-updates.log
 
           # Build a markdown table of changed version properties for the PR body.
@@ -322,8 +325,8 @@ jobs:
       - name: Validate dependency resolution after updates
         run: |
           mvn -B install -N -DskipDependencyCheck=true 2>&1 | tee resolve-post-install.log
-          mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true 2>&1 | tee resolve-post-validation.log
-          echo "All BOM-declared versions resolved successfully after update."
+          mvn -B package -f validation/pom.xml -DskipDependencyCheck=true 2>&1 | tee resolve-post-validation.log
+          echo "All BOM-declared versions resolved and JARs staged successfully after update."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -356,7 +359,7 @@ jobs:
         timeout-minutes: 10
         with:
           project: "izgw-bom-validation-post-update"
-          path: "validation"
+          path: "validation/target/dependency"
           format: "HTML"
           out: "dependency-check-report-post"
           args: >

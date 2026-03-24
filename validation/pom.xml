@@ -13,15 +13,56 @@
     </parent>
 
     <artifactId>izgw-bom-validation</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <name>IZ Gateway BOM — Validation</name>
     <description>
-        Synthetic project that resolves (but does not compile) a representative set of
-        BOM-managed dependencies. Used by CI workflows to verify that every declared
-        version resolves from Maven Central or GitHub Packages.
-        This project is never published or deployed.
+        Synthetic project that compiles and packages a representative set of
+        BOM-managed dependencies into a JAR. Used by CI workflows to verify that every
+        declared version resolves and to provide real JARs for the OWASP
+        dependency-check file scanner. This project is never published or deployed.
     </description>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>21</release>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>gov.cdc.izgw.validation.Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <!-- Copy all runtime dependency JARs to target/dependency for OWASP scanning -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/dependency</outputDirectory>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <!-- One dependency per version property declared in the BOM <properties> block -->

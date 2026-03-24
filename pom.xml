@@ -793,7 +793,6 @@
                         <allowMinorUpdates>true</allowMinorUpdates>
                         <allowIncrementalUpdates>true</allowIncrementalUpdates>
                         <generateBackupPoms>false</generateBackupPoms>
-                        <rulesUri>file:///${maven.multiModuleProjectDirectory}/.github/versions-rules.xml</rulesUri>
                     </configuration>
                 </plugin>
             </plugins>
