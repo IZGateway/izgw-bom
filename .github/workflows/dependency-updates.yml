@@ -254,7 +254,7 @@ jobs:
               # (any ${*.version} reference in pom.xml for this artifactId)
               EXISTING_PROP=$(grep -oP "(?<=\\\$\{)[a-z][a-zA-Z0-9._-]+\.version(?=\})" pom.xml \
                 | while IFS= read -r p; do
-                    grep -qF "<${ARTIFACT_ID}>" pom.xml && \
+                    grep -qF "<artifactId>${ARTIFACT_ID}</artifactId>" pom.xml && \
                     grep -qF "\${$p}" pom.xml && echo "$p" || true
                   done | head -1 || true)
               [ -n "$EXISTING_PROP" ] && continue
