@@ -385,6 +385,7 @@ jobs:
             echo "CVE_SUMMARY_POST=Post-update scan: ${VULN_COUNT} vulnerabilities found. See the \`dependency-check-report-post-update\` artifact." >> $GITHUB_ENV
             if [ "$VULN_COUNT" -gt 0 ] 2>/dev/null; then
               echo "HAS_CVES=true" >> $GITHUB_ENV
+              echo "HAS_CHANGES=true" >> $GITHUB_ENV
             fi
           else
             echo "CVE_SUMMARY_POST=Post-update CVE report not found — see workflow logs." >> $GITHUB_ENV
