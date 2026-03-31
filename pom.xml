@@ -60,7 +60,7 @@
         <nimbus-jose-jwt.version>10.8</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.6.0</mysql.version>
-        <aws-sdk.version>2.42.22</aws-sdk.version>
+        <aws-sdk.version>2.42.24</aws-sdk.version>
         <camel.version>4.18.0</camel.version>
         <lombok.version>1.18.44</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
