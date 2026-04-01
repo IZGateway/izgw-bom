@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-04-01
+
+### Changes
+- chore(deps): automated dependency updates 2026-04-01 ([#39](https://github.com/IZGateway/izgw-bom/pull/39))
+- chore(deps): automated dependency updates 2026-03-31 ([#38](https://github.com/IZGateway/izgw-bom/pull/38))
+- chore(deps): automated dependency updates 2026-03-27 ([#36](https://github.com/IZGateway/izgw-bom/pull/36))
+- chore(deps): automated dependency updates 2026-03-26 ([#35](https://github.com/IZGateway/izgw-bom/pull/35))
+- chore(deps): automated dependency updates 2026-03-25 ([#34](https://github.com/IZGateway/izgw-bom/pull/34))
+- chore(deps): automated dependency updates 2026-03-24 ([#27](https://github.com/IZGateway/izgw-bom/pull/27))
+- chore: Archive Openspec change auto-update-dependencies ([#33](https://github.com/IZGateway/izgw-bom/pull/33))
+- fix: prevent silent Maven failure in transitive dependency detection… ([#32](https://github.com/IZGateway/izgw-bom/pull/32))
+- Updates per GHCP suggestions to dependency-updates-20260324-00-45 ([#31](https://github.com/IZGateway/izgw-bom/pull/31))
+- chore: verify and complete OpenSpec auto-update-dependencies change ([#29](https://github.com/IZGateway/izgw-bom/pull/29))
+- Bump org.springframework:spring-webflux from 6.2.14 to 6.2.17 ([#20](https://github.com/IZGateway/izgw-bom/pull/20))
+- chore: Bump HAPI FHIR to bring up updated dependencies ([#19](https://github.com/IZGateway/izgw-bom/pull/19))
+
 ## [1.3.0] - 2026-03-04
 
 ### Changes
