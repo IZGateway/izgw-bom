@@ -1,0 +1,489 @@
+name: Automated Dependency Updates
+
+on:
+  schedule:
+    # Mon-Fri 2:00 AM ET (07:00 UTC)
+    - cron: "0 7 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependency-updates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: maven
+          server-id: github
+
+      - name: Set up Maven 3.9.14
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.9.14
+
+      - name: Configure Maven authentication
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml <<EOF
+          <settings>
+            <servers>
+              <server>
+                <id>github</id>
+                <username>${{ github.actor }}</username>
+                <password>${{ secrets.GITHUB_TOKEN }}</password>
+              </server>
+              <server>
+                <id>github-bom</id>
+                <username>${{ github.actor }}</username>
+                <password>${{ secrets.GITHUB_TOKEN }}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+
+      - name: Read automation exclusions
+        run: |
+          # Strip comments and blank lines, join with comma for --excludes argument
+          EXCLUDES=$(grep -v '^\s*#' automation-exclusions.txt | grep -v '^\s*$' | paste -sd ',' -)
+          echo "EXCLUDES=$EXCLUDES" >> $GITHUB_ENV
+          echo "Excluding from automation: $EXCLUDES"
+
+      - name: Detect available property version updates
+        run: |
+          echo "--- Available property updates ---"
+          mvn -B versions:display-property-updates \
+            -DallowMajorUpdates=false \
+            -DallowMinorUpdates=true \
+            -DallowIncrementalUpdates=true \
+            -Dexcludes="${{ env.EXCLUDES }}" \
+            | tee property-updates.log \
+            | grep -E 'The following|->|\[INFO\] *$' || echo "(none found)"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Detect available plugin version updates
+        run: |
+          echo "--- Available plugin updates ---"
+          mvn -B versions:display-plugin-updates \
+            -DallowMajorUpdates=false \
+            -DallowMinorUpdates=true \
+            -DallowIncrementalUpdates=true \
+            | tee plugin-updates.log \
+            | grep -E 'The following|->|\[INFO\] *$' || echo "(none found)"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve BOM dependencies (synthetic validation project)
+        run: |
+          mvn -B install -N -DskipDependencyCheck=true 2>&1 | tee resolve-pre-install.log
+          mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true 2>&1 | tee resolve-pre-validation.log
+          echo "All BOM-declared versions resolved successfully."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # -----------------------------------------------------------------------
+      # PRE-UPDATE PHASE: capture baseline state before any changes
+      # -----------------------------------------------------------------------
+
+      - name: Capture pre-update dependency tree
+        run: |
+          mvn -B dependency:tree -f validation/pom.xml -DskipDependencyCheck=true \
+            2>&1 | tee dependency-tree-pre.log
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Detect outdated transitive dependencies
+        run: |
+          set -o pipefail
+          echo "--- Outdated transitive/direct dependency versions ---"
+          mvn -B versions:display-dependency-updates \
+            -f validation/pom.xml \
+            -DallowMajorUpdates=false \
+            -DallowMinorUpdates=true \
+            -DallowIncrementalUpdates=true \
+            -DskipDependencyCheck=true \
+            2>&1 | tee dependency-updates-pre.log
+          grep -E 'The following|->|\[INFO\] *$' dependency-updates-pre.log || echo "(none found)"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pre-update CVE scan
+        id: cve-scan-pre
+        uses: dependency-check/Dependency-Check_Action@main
+        continue-on-error: true
+        timeout-minutes: 10
+        with:
+          project: "izgw-bom-validation-pre-update"
+          path: "validation"
+          format: "HTML"
+          out: "dependency-check-report-pre"
+          args: >
+            --suppression /github/workspace/dependency-suppression.xml
+            --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
+            --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
+            --failOnCVSS 7
+            --disableNuspec
+            --disableNugetconf
+            --disableAssembly
+        env:
+          JAVA_HOME: /opt/jdk
+
+      - name: Upload pre-update CVE report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report-pre-update
+          path: dependency-check-report-pre/
+
+      - name: Read pre-update CVE summary
+        if: always()
+        run: |
+          REPORT="dependency-check-report-pre/dependency-check-report.html"
+          if [ -f "$REPORT" ]; then
+            VULN_COUNT=$(grep -oP 'vulnerabilities found: \K[0-9]+' "$REPORT" | head -1 || echo "see report artifact")
+            echo "CVE_SUMMARY_PRE=Pre-update scan: ${VULN_COUNT} vulnerabilities found. See the \`dependency-check-report-pre-update\` artifact." >> $GITHUB_ENV
+          else
+            echo "CVE_SUMMARY_PRE=Pre-update CVE report not found — see workflow logs." >> $GITHUB_ENV
+          fi
+
+      # -----------------------------------------------------------------------
+      # APPLY PHASE: bump property-backed versions and detect unfixed transitives
+      # -----------------------------------------------------------------------
+
+      - name: Apply patch and minor version bumps
+        id: apply-updates
+        run: |
+          # Snapshot pom.xml before update so we can diff what changed
+          cp pom.xml pom.xml.before
+
+          mvn -B versions:update-properties \
+            -DallowMajorUpdates=false \
+            -DallowMinorUpdates=true \
+            -DallowIncrementalUpdates=true \
+            -Dexcludes="${{ env.EXCLUDES }}" \
+            -DgenerateBackupPoms=false \
+            2>&1 | tee apply-updates.log
+
+          # Build a markdown table of changed version properties for the PR body.
+          # Parse the diff output into two associative arrays (old/new) keyed by
+          # property name so that columns never shift regardless of diff ordering.
+          declare -A OLD_VERS NEW_VERS
+          while IFS= read -r line; do
+            side="${line:0:1}"   # '<' = before, '>' = after
+            prop=$(echo "$line" | grep -oP '(?<=<)[a-z][a-zA-Z0-9._-]+(?=\.version>)')
+            ver=$(echo "$line"  | grep -oP '(?<=\.version>)[^<]+')
+            [ -z "$prop" ] || [ -z "$ver" ] && continue
+            if [ "$side" = "<" ]; then OLD_VERS["$prop"]="$ver"
+            else                        NEW_VERS["$prop"]="$ver"
+            fi
+          done < <(diff pom.xml.before pom.xml | grep '^[<>]')
+
+          CHANGES=""
+          for prop in "${!NEW_VERS[@]}"; do
+            old="${OLD_VERS[$prop]:-unknown}"
+            new="${NEW_VERS[$prop]}"
+            CHANGES+="| \`${prop}\` | \`${old}\` | \`${new}\` |"$'\n'
+          done
+
+          if [ -z "$CHANGES" ]; then
+            echo "No version changes applied."
+            echo "CHANGES_TABLE=" >> $GITHUB_ENV
+            echo "HAS_CHANGES=false" >> $GITHUB_ENV
+          else
+            echo "Version properties updated:"
+            echo "$CHANGES"
+            {
+              echo 'CHANGES_TABLE<<EOF'
+              echo "| Property | Old Version | New Version |"
+              echo "|----------|-------------|-------------|"
+              echo "$CHANGES"
+              echo 'EOF'
+            } >> $GITHUB_ENV
+            echo "HAS_CHANGES=true" >> $GITHUB_ENV
+          fi
+
+          # Also report excluded libraries and their latest available versions for visibility
+          EXCLUDED_REPORT=""
+          while IFS= read -r lib; do
+            [[ -z "$lib" || "$lib" =~ ^# ]] && continue
+            EXCLUDED_REPORT+="- \`$lib\` (manually managed — not updated automatically)"$'\n'
+          done < automation-exclusions.txt
+          {
+            echo 'EXCLUDED_REPORT<<EOF'
+            echo "$EXCLUDED_REPORT"
+            echo 'EOF'
+          } >> $GITHUB_ENV
+
+          # ---- Auto-fix transitive dependencies that have no property override ----
+          #
+          # Parse dependency-updates-pre.log for lines of the form:
+          #   [INFO]   groupId:artifactId ... oldVersion -> newVersion
+          # For each, check whether any existing property in pom.xml already
+          # governs that artifactId (i.e. ${artifactId.version} appears in pom.xml).
+          # If not, derive a property name and inject both the <property> entry and
+          # a <dependencyManagement> entry (no <scope>, letting Maven narrow naturally).
+          # Property name rule:
+          #   1. Try artifactId.version
+          #   2. If that key already exists (different groupId), use groupId.artifactId.version
+          #
+          # Install xmlstarlet for XML-safe pom.xml editing
+          sudo apt-get install -qq -y xmlstarlet > /dev/null
+
+          AUTO_FIXED_TRANSITIVES=""
+          MANUAL_TRANSITIVES=""
+
+          while IFS= read -r line; do
+            # Match lines like: [INFO]   groupId:artifactId ... oldVer -> newVer
+            if echo "$line" | grep -qP '\[INFO\]\s+\S+:\S+\s+\S+\s+->\s+\S+'; then
+              GROUP_ARTIFACT=$(echo "$line" | grep -oP '(?<=\[INFO\]\s{3})\S+:\S+' | head -1)
+              [ -z "$GROUP_ARTIFACT" ] && continue
+              GROUP_ID=$(echo "$GROUP_ARTIFACT" | cut -d: -f1)
+              ARTIFACT_ID=$(echo "$GROUP_ARTIFACT" | cut -d: -f2)
+              NEW_VERSION=$(echo "$line" | grep -oP '(?<=->\s)\S+' | head -1)
+              [ -z "$NEW_VERSION" ] && continue
+
+              # Skip if already governed by an existing property
+              # (any ${*.version} reference in pom.xml for this artifactId)
+              EXISTING_PROP=$(grep -oP "(?<=\\\$\{)[a-z][a-zA-Z0-9._-]+\.version(?=\})" pom.xml \
+                | while IFS= read -r p; do
+                    grep -qF "<artifactId>${ARTIFACT_ID}</artifactId>" pom.xml && \
+                    grep -qF "\${$p}" pom.xml && echo "$p" || true
+                  done | head -1 || true)
+              [ -n "$EXISTING_PROP" ] && continue
+
+              # Derive property name: prefer artifactId.version, fall back to groupId.artifactId.version
+              PROP_NAME="${ARTIFACT_ID}.version"
+              if grep -qF "<${PROP_NAME}>" pom.xml; then
+                PROP_NAME="${GROUP_ID}.${ARTIFACT_ID}.version"
+              fi
+
+              # Insert <PROP_NAME>NEW_VERSION</PROP_NAME> before </properties>
+              if xmlstarlet ed --inplace \
+                  -s "/project/properties" -t elem -n "${PROP_NAME}" -v "${NEW_VERSION}" \
+                  pom.xml 2>/dev/null; then
+
+                # Insert <dependency> into <dependencyManagement><dependencies> before </dependencies>
+                xmlstarlet ed --inplace \
+                  -s "/project/dependencyManagement/dependencies" -t elem -n "dependency" -v "" \
+                  -s "/project/dependencyManagement/dependencies/dependency[last()]" -t elem -n "groupId" -v "${GROUP_ID}" \
+                  -s "/project/dependencyManagement/dependencies/dependency[last()]" -t elem -n "artifactId" -v "${ARTIFACT_ID}" \
+                  -s "/project/dependencyManagement/dependencies/dependency[last()]" -t elem -n "version" -v "\${${PROP_NAME}}" \
+                  pom.xml 2>/dev/null && \
+                AUTO_FIXED_TRANSITIVES+="| \`${GROUP_ID}:${ARTIFACT_ID}\` | \`${PROP_NAME}\` | \`${NEW_VERSION}\` |"$'\n' || \
+                MANUAL_TRANSITIVES+="- \`${GROUP_ARTIFACT}\` → \`${NEW_VERSION}\` — XML edit failed; manual entry required"$'\n'
+              else
+                MANUAL_TRANSITIVES+="- \`${GROUP_ARTIFACT}\` → \`${NEW_VERSION}\` — property insert failed; manual entry required"$'\n'
+              fi
+            fi
+          done < dependency-updates-pre.log
+
+          {
+            echo 'AUTO_FIXED_TRANSITIVES<<EOF'
+            if [ -n "$AUTO_FIXED_TRANSITIVES" ]; then
+              echo "| Artifact | Property Added | Version |"
+              echo "|----------|----------------|---------|"
+              echo "$AUTO_FIXED_TRANSITIVES"
+            else
+              echo "_None — all transitives are already property-backed._"
+            fi
+            echo 'EOF'
+          } >> $GITHUB_ENV
+
+          {
+            echo 'MANUAL_TRANSITIVES<<EOF'
+            if [ -n "$MANUAL_TRANSITIVES" ]; then
+              echo "$MANUAL_TRANSITIVES"
+            else
+              echo "_None._"
+            fi
+            echo 'EOF'
+          } >> $GITHUB_ENV
+
+          # If any transitives were auto-fixed, mark that we have changes to commit
+          if [ -n "$AUTO_FIXED_TRANSITIVES" ]; then
+            echo "HAS_CHANGES=true" >> $GITHUB_ENV
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # -----------------------------------------------------------------------
+      # POST-UPDATE PHASE: validate and verify fixes
+      # -----------------------------------------------------------------------
+
+      - name: Validate dependency resolution after updates
+        run: |
+          mvn -B install -N -DskipDependencyCheck=true 2>&1 | tee resolve-post-install.log
+          mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true 2>&1 | tee resolve-post-validation.log
+          echo "All BOM-declared versions resolved successfully after update."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Capture post-update dependency tree and diff
+        run: |
+          mvn -B dependency:tree -f validation/pom.xml -DskipDependencyCheck=true \
+            2>&1 | tee dependency-tree-post.log
+          echo "--- Dependency tree diff (pre vs post update) ---"
+          TREE_DIFF=$(diff dependency-tree-pre.log dependency-tree-post.log || true)
+          if [ -z "$TREE_DIFF" ]; then
+            echo "No dependency tree changes."
+            echo "TREE_DIFF_SUMMARY=_No dependency tree changes._" >> $GITHUB_ENV
+          else
+            echo "$TREE_DIFF"
+            {
+              echo 'TREE_DIFF_SUMMARY<<EOF'
+              echo '```diff'
+              echo "$TREE_DIFF"
+              echo '```'
+              echo 'EOF'
+            } >> $GITHUB_ENV
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Post-update CVE scan
+        id: cve-scan-post
+        uses: dependency-check/Dependency-Check_Action@main
+        continue-on-error: true
+        timeout-minutes: 10
+        with:
+          project: "izgw-bom-validation-post-update"
+          path: "validation"
+          format: "HTML"
+          out: "dependency-check-report-post"
+          args: >
+            --suppression /github/workspace/dependency-suppression.xml
+            --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
+            --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
+            --failOnCVSS 7
+            --disableNuspec
+            --disableNugetconf
+            --disableAssembly
+        env:
+          JAVA_HOME: /opt/jdk
+
+      - name: Upload post-update CVE report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report-post-update
+          path: dependency-check-report-post/
+
+      - name: Read post-update CVE summary
+        if: always()
+        run: |
+          REPORT="dependency-check-report-post/dependency-check-report.html"
+          if [ -f "$REPORT" ]; then
+            VULN_COUNT=$(grep -oP 'vulnerabilities found: \K[0-9]+' "$REPORT" | head -1 || echo "see report artifact")
+            echo "CVE_SUMMARY_POST=Post-update scan: ${VULN_COUNT} vulnerabilities found. See the \`dependency-check-report-post-update\` artifact." >> $GITHUB_ENV
+            if [ "$VULN_COUNT" -gt 0 ] 2>/dev/null; then
+              echo "HAS_CVES=true" >> $GITHUB_ENV
+              echo "HAS_CHANGES=true" >> $GITHUB_ENV
+            fi
+          else
+            echo "CVE_SUMMARY_POST=Post-update CVE report not found — see workflow logs." >> $GITHUB_ENV
+          fi
+
+      - name: Upload debug artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-logs
+          if-no-files-found: ignore
+          path: |
+            pom.xml
+            pom.xml.before
+            pr-body.md
+            property-updates.log
+            plugin-updates.log
+            dependency-updates-pre.log
+            dependency-tree-pre.log
+            dependency-tree-post.log
+            resolve-pre-install.log
+            resolve-pre-validation.log
+            apply-updates.log
+            resolve-post-install.log
+            resolve-post-validation.log
+            dependency-check-report-pre/
+            dependency-check-report-post/
+
+      - name: Open pull request
+        id: open-pr
+        if: env.HAS_CHANGES == 'true'
+        run: |
+          BRANCH="dependency-updates-$(date +'%Y%m%d-%H-%M')"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add pom.xml
+          git commit -m "chore(deps): automated dependency version bumps $(date +'%Y-%m-%d')"
+          git push origin "$BRANCH"
+
+          # Use the checked-in template and envsubst for variable substitution —
+          # handles newlines, pipes, backticks and other special characters that break sed delimiters.
+          export CHANGES_TABLE="${CHANGES_TABLE}"
+          export AUTO_FIXED_TRANSITIVES="${AUTO_FIXED_TRANSITIVES}"
+          export MANUAL_TRANSITIVES="${MANUAL_TRANSITIVES}"
+          export TREE_DIFF_SUMMARY="${TREE_DIFF_SUMMARY}"
+          export EXCLUDED_REPORT="${EXCLUDED_REPORT}"
+          export CVE_SUMMARY_PRE="${CVE_SUMMARY_PRE}"
+          export CVE_SUMMARY_POST="${CVE_SUMMARY_POST}"
+          envsubst < .github/workflows/pr-body-template.md > pr-body.md
+
+          LABELS="dependencies"
+          if [ "$HAS_CVES" = "true" ]; then
+            LABELS="dependencies,security"
+          fi
+
+          PR_URL=$(gh pr create \
+            --base develop \
+            --head "$BRANCH" \
+            --title "chore(deps): automated dependency updates $(date +'%Y-%m-%d')" \
+            --body-file pr-body.md \
+            --label "$LABELS")
+
+          echo "PR_URL=$PR_URL" >> $GITHUB_ENV
+          echo "PR created: $PR_URL"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send email notification
+        if: env.HAS_CHANGES == 'true' && env.PR_URL != ''
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: email-smtp.us-east-1.amazonaws.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "[izgw-bom] Automated dependency updates PR opened — $(date +'%Y-%m-%d')"
+          to: ${{ secrets.MAIL_RECIPIENTS }}, kboone@ainq.com
+          from: "IZ Gateway CI <noreply@izgateway.org>"
+          body: |
+            An automated dependency update PR has been opened for izgw-bom.
+
+            PR: ${{ env.PR_URL }}
+
+            ${{ env.CHANGES_TABLE }}
+
+            Transitive dependencies auto-fixed:
+            ${{ env.AUTO_FIXED_TRANSITIVES }}
+
+            Pre-update CVE scan:  ${{ env.CVE_SUMMARY_PRE }}
+            Post-update CVE scan: ${{ env.CVE_SUMMARY_POST }}
+
+            Transitives requiring manual action:
+            ${{ env.MANUAL_TRANSITIVES }}
+
+            Excluded libraries (not updated automatically):
+            ${{ env.EXCLUDED_REPORT }}
+
+            Please review and merge if all checks pass.

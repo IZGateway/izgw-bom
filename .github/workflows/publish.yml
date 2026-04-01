@@ -4,10 +4,18 @@ on:
   push:
     branches:
       - develop
+    paths-ignore:
+      - '.github/workflows/**'
+      - 'openspec/**'
+      - '**.md'
 
   pull_request:
     branches:
       - develop
+    paths-ignore:
+      - '.github/workflows/**'
+      - 'openspec/**'
+      - '**.md'
       
   workflow_dispatch:
 
@@ -25,6 +33,55 @@ jobs:
           distribution: "temurin"
           cache: maven
           server-id: github
+
+      - name: Set up Maven 3.9.14
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.9.14
+
+      - name: Configure Maven authentication
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml <<EOF
+          <settings>
+            <servers>
+              <server>
+                <id>github</id>
+                <username>${{ github.actor }}</username>
+                <password>${{ secrets.GITHUB_TOKEN }}</password>
+              </server>
+              <server>
+                <id>github-bom</id>
+                <username>${{ github.actor }}</username>
+                <password>${{ secrets.GITHUB_TOKEN }}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+
+      - name: Validate POM is well-formed
+        run: mvn -B validate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check all dependencyManagement versions are property-backed
+        run: |
+          # Extract only the <dependencyManagement> block and check for hardcoded versions
+          HARDCODED=$(awk '/<dependencyManagement>/,/<\/dependencyManagement>/' pom.xml \
+            | grep -oP '(?<=<version>)(?!\$\{)[^<]+' || true)
+          if [ -n "$HARDCODED" ]; then
+            echo "ERROR: Hardcoded version(s) found in <dependencyManagement>:"
+            echo "$HARDCODED"
+            exit 1
+          fi
+          echo "All dependencyManagement versions are property-backed."
+
+      - name: Resolve BOM dependencies (synthetic validation project)
+        run: |
+          mvn -B install -N -DskipDependencyCheck=true -q
+          mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true -q
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & Publish
         run: mvn -B clean install deploy

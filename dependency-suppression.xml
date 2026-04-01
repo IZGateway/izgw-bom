@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!--
+        dependency-suppression.xml
+        OWASP Dependency-Check false-positive suppressions for izgw-bom.
+
+        To suppress a CVE, add a <suppress> block with:
+          - <notes>     : reason for suppression and date added
+          - <packageUrl>: the affected package (use regex="true" for wildcards)
+          - <cve>       : the CVE identifier(s) to suppress
+
+        Review suppressions regularly and remove any that are no longer needed.
+        See: https://jeremylong.github.io/DependencyCheck/general/suppression.html
+    -->
+</suppressions>
