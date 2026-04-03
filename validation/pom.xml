@@ -8,11 +8,7 @@
     <parent>
         <groupId>gov.cdc.izgw</groupId>
         <artifactId>izgw-bom</artifactId>
-        <!-- the release workflow (_release_common.yml) uses sed to find the
-             marker below and update the parent version automatically. Please
-             don't remove it or rename it w/o also changing the release workflow
-        -->
-        <!-- @bom-version --><version>1.5.0-SNAPSHOT</version>
+        <version>1.5.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

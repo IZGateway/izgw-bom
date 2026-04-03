@@ -239,8 +239,10 @@ jobs:
         run: |
           echo "Setting version to ${{ inputs.release-version }}"
           mvn versions:set -DnewVersion=${{ inputs.release-version }} -DgenerateBackupPoms=false
+          # Install root POM to local repo so validation project can resolve it
+          mvn -B install -N -DskipDependencyCheck=true
           # Update validation project parent version to match (not a reactor module)
-          sed -i "s|<!-- @bom-version --><version>[^<]*</version>|<!-- @bom-version --><version>${{ inputs.release-version }}</version>|" validation/pom.xml
+          mvn versions:update-parent -f validation/pom.xml -DparentVersion=${{ inputs.release-version }} -DgenerateBackupPoms=false
           git add pom.xml validation/pom.xml
           git commit -m "chore: prepare release ${{ inputs.release-version }}"
           git push origin "${{ steps.validate.outputs.release_branch }}"
@@ -347,8 +349,10 @@ jobs:
           if [[ -n "${{ steps.next-version.outputs.next_snapshot_version }}" ]]; then
             echo "Bumping to next SNAPSHOT version: ${{ steps.next-version.outputs.next_snapshot_version }}"
             mvn versions:set -DnewVersion=${{ steps.next-version.outputs.next_snapshot_version }} -DgenerateBackupPoms=false
+            # Install root POM to local repo so validation project can resolve it
+            mvn -B install -N -DskipDependencyCheck=true
             # Update validation project parent version to match (not a reactor module)
-            sed -i "s|<!-- @bom-version --><version>[^<]*</version>|<!-- @bom-version --><version>${{ steps.next-version.outputs.next_snapshot_version }}</version>|" validation/pom.xml
+            mvn versions:update-parent -f validation/pom.xml -DparentVersion=${{ steps.next-version.outputs.next_snapshot_version }} -DallowSnapshots=true -DgenerateBackupPoms=false
             git add pom.xml validation/pom.xml
             git commit -m "chore: bump version to ${{ steps.next-version.outputs.next_snapshot_version }}"
           else
