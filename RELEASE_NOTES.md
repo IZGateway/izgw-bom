@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-04-09
+
+### Changes
+- chore(deps): automated dependency updates 2026-04-09 ([#43](https://github.com/IZGateway/izgw-bom/pull/43))
+- chore(deps): automated dependency updates 2026-04-08 ([#42](https://github.com/IZGateway/izgw-bom/pull/42))
+- IGDD-2693 Release automation now updates validation/pom.xml ([#41](https://github.com/IZGateway/izgw-bom/pull/41))
+
 ## [1.4.0] - 2026-04-01
 
 ### Changes
