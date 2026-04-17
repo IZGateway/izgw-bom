@@ -126,6 +126,26 @@ jobs:
           name: dependency-check-report
           path: dependency-check-report/          
 
+      - name: Fail build if CVE scan failed or warn if report was not produced
+        if: always()
+        run: |
+          OUTCOME="${{ steps.cve-scan.outcome }}"
+          REPORT_EXISTS=false
+          if compgen -G "dependency-check-report/*.html" > /dev/null 2>&1; then
+            REPORT_EXISTS=true
+          fi
+
+          if [ "$OUTCOME" = "failure" ] && [ "$REPORT_EXISTS" = "true" ]; then
+            echo "::error::CVE scan found vulnerabilities with CVSS >= 7. See the dependency-check-report artifact for details."
+            exit 1
+          elif [ "$OUTCOME" = "failure" ] && [ "$REPORT_EXISTS" = "false" ]; then
+            echo "::warning::CVE scan failed and no report was produced. The scan may have timed out or encountered an error."
+          elif [ "$OUTCOME" != "success" ] || [ "$REPORT_EXISTS" = "false" ]; then
+            echo "::warning::CVE scan did not produce a report (outcome: $OUTCOME). Vulnerability status is unknown."
+          else
+            echo "CVE scan completed successfully."
+          fi
+
       - name: Build & Publish
         run: mvn -B clean install deploy
         env:
