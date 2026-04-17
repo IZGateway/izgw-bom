@@ -78,10 +78,39 @@ jobs:
 
       - name: Resolve BOM dependencies (synthetic validation project)
         run: |
-          mvn -B install -N -DskipDependencyCheck=true -q
+          mvn -B install -N -DskipDependencyCheck=true -DskipTests=true -q
           mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true -q
+          mvn -B package -f validation/pom.xml -DskipDependencyCheck=true -DskipTests=true -q
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: CVE scan on validation project
+        env:
+          JAVA_HOME: /opt/jdk
+        id: cve-scan
+        uses: dependency-check/Dependency-Check_Action@main
+        continue-on-error: true
+        timeout-minutes: 10
+        with:
+            project: "izgw-bom-validation"
+            path: "validation"
+            format: "HTML"
+            out: "dependency-check-report"
+            args: >
+              --suppression /github/workspace/dependency-suppression.xml
+              --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
+              --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
+              --failOnCVSS 7
+              --disableNuspec
+              --disableNugetconf
+              --disableAssembly
+
+      - name: Upload CVE report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: dependency-check-report/          
 
       - name: Build & Publish
         run: mvn -B clean install deploy
