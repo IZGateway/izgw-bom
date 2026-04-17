@@ -109,7 +109,6 @@ jobs:
             path: "validation"
             format: "HTML"
             out: "dependency-check-report"
-            dataDirectory: "/github/home/dependency-check-data"
             args: >
               --suppression /github/workspace/dependency-suppression.xml
               --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
