@@ -12,4 +12,11 @@
         Review suppressions regularly and remove any that are no longer needed.
         See: https://jeremylong.github.io/DependencyCheck/general/suppression.html
     -->
+    <suppress>
+    <notes><![CDATA[
+    file name: spring-security-core-6.5.9.jar vulnerability only applies when used with spring-framework 5.0.5 which is not in this project.
+    ]]></notes>
+    <sha1>a9c374607e9f8593c28dbb93feb4ef1ee32aa527</sha1>
+    <cve>CVE-2018-1258</cve>
+</suppress>
 </suppressions>

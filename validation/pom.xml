@@ -50,6 +50,12 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
 
+        <!-- swagger-ui.version -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>swagger-ui</artifactId>
+        </dependency>
+
         <!-- tomcat.version -->
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
