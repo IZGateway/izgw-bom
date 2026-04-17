@@ -178,7 +178,11 @@
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-base</artifactId>
         </dependency>
-
+        <!-- thymeleaf.version -->
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf</artifactId>
+        </dependency>
         <!-- opencsv.version -->
         <dependency>
             <groupId>com.opencsv</groupId>

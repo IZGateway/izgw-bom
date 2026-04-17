@@ -50,6 +50,7 @@
         <hapi-fhir.version>8.8.1</hapi-fhir.version>
         <hl7-fhir.version>6.9.6</hl7-fhir.version>
         <opencsv.version>5.12.0</opencsv.version>
+        <thymeleaf.version>3.1.4.RELEASE</thymeleaf.version>
         <!-- ulidj -->
         <ulidj.version>1.1.0</ulidj.version>
         <!-- Validation -->
@@ -631,7 +632,11 @@
                 <artifactId>org.hl7.fhir.validation</artifactId>
                 <version>${hl7-fhir.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.thymeleaf</groupId>
+                <artifactId>thymeleaf</artifactId>
+                <version>${thymeleaf.version}</version>
+            </dependency>
             <dependency>
                 <groupId>net.sf.saxon</groupId>
                 <artifactId>Saxon-HE</artifactId>
