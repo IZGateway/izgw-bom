@@ -85,13 +85,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
+      - name: Get current date for cache key
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Cache Dependency-Check NVD data
+        uses: actions/cache@v4
+        with:
+          path: ~/dependency-check-data
+          key: dependency-check-nvd-${{ runner.os }}-${{ steps.date.outputs.date }}
+          restore-keys: |
+            dependency-check-nvd-${{ runner.os }}-
+
       - name: CVE scan on validation project
         env:
           JAVA_HOME: /opt/jdk
         id: cve-scan
         uses: dependency-check/Dependency-Check_Action@main
         continue-on-error: true
-        timeout-minutes: 10
+        timeout-minutes: 15
         with:
             project: "izgw-bom-validation"
             path: "validation"
@@ -102,6 +114,8 @@ jobs:
               --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
               --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
               --failOnCVSS 7
+              --nvdApiKey ${{ secrets.NVDAPIKEY }}
+              --dataDirectory /github/home/dependency-check-data
               --disableNuspec
               --disableNugetconf
               --disableAssembly
