@@ -98,6 +98,12 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
+        <!-- log4j2.version -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+
         <!-- logback.version -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -229,6 +235,12 @@
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
+        </dependency>
+
+        <!-- protobuf-java.version -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
         </dependency>
 
         <!-- mysql.version -->
