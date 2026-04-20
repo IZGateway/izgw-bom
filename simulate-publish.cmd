@@ -131,7 +131,7 @@ if errorlevel 1 (
 )
 
 call mvn -B dependency:copy-dependencies -f validation\pom.xml ^
-    -DoutputDirectory=validation\target\dependency ^
+    -DoutputDirectory=target\dependency ^
     -DincludeScope=runtime ^
     -DskipDependencyCheck=true -q
 if errorlevel 1 (

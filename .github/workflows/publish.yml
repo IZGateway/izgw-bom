@@ -80,7 +80,7 @@ jobs:
         run: |
           mvn -B install -N -DskipDependencyCheck=true -DskipTests=true -q
           mvn -B clean package -f validation/pom.xml -DskipDependencyCheck=true -DskipTests=true -q
-          mvn -B dependency:copy-dependencies -f validation/pom.xml -DoutputDirectory=validation/target/dependency -DincludeScope=runtime -DskipDependencyCheck=true -q
+          mvn -B dependency:copy-dependencies -f validation/pom.xml -DoutputDirectory=target/dependency -DincludeScope=runtime -DskipDependencyCheck=true -q
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
