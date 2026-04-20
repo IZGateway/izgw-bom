@@ -17,8 +17,8 @@ REM
 REM Optional environment variables:
 REM   OSS_INDEX_USERNAME  Sonatype OSS Index username (improves scan quality)
 REM   OSS_INDEX_PASSWORD  Sonatype OSS Index password / token
-REM   DC_HOME             Path to dependency-check CLI installation
-REM                       Default: C:\tools\dependency-check
+REM   DC_HOME             Path to dependency-check CLI installation (bin\dependency-check.bat).
+REM                       If not set, dependency-check is resolved from PATH.
 REM   SKIP_DC             Set to 1 to skip the dependency-check scan (build only)
 REM ============================================================
 
@@ -27,10 +27,14 @@ set SCRIPT_DIR=%SCRIPT_DIR:~0,-1%
 cd /d "%SCRIPT_DIR%"
 
 REM ---- Defaults ----
-if not defined DC_HOME set DC_HOME=C:\tools\dependency-check
 if not defined SKIP_DC set SKIP_DC=0
 
-set DC_CLI=%DC_HOME%\bin\dependency-check.bat
+REM Resolve dependency-check command: DC_HOME\bin\dependency-check.bat, or from PATH
+if defined DC_HOME (
+    set DC_CLI=%DC_HOME%\bin\dependency-check.bat
+) else (
+    set DC_CLI=dependency-check.bat
+)
 set REPORT_DIR=%SCRIPT_DIR%\dependency-check-report
 set SUPPRESSION=%SCRIPT_DIR%\dependency-suppression.xml
 
@@ -62,17 +66,33 @@ if "%SKIP_DC%"=="0" (
         echo          Get a key at: https://nvd.nist.gov/developers/request-an-api-key
         echo.
     )
-    if not exist "%DC_CLI%" (
-        echo ERROR: Dependency-Check CLI not found at: %DC_CLI%
-        echo        Download from https://github.com/jeremylong/DependencyCheck/releases
-        echo        and extract to %DC_HOME%, or set DC_HOME to your installation path.
-        exit /b 1
+    if defined DC_HOME (
+        if not exist "%DC_CLI%" (
+            echo ERROR: Dependency-Check CLI not found at: %DC_CLI%
+            echo        Check DC_HOME or download from:
+            echo        https://github.com/jeremylong/DependencyCheck/releases
+            exit /b 1
+        )
+    ) else (
+        where dependency-check.bat >nul 2>&1
+        if errorlevel 1 (
+            echo ERROR: dependency-check.bat not found on PATH and DC_HOME is not set.
+            echo        Either add dependency-check\bin to your PATH or set DC_HOME.
+            echo        Download from: https://github.com/jeremylong/DependencyCheck/releases
+            exit /b 1
+        )
     )
 )
 
 echo   mvn:  OK
 echo   java: OK
-if "%SKIP_DC%"=="0" echo   DC_HOME: %DC_HOME%
+if "%SKIP_DC%"=="0" (
+    if defined DC_HOME (
+        echo   dependency-check: %DC_CLI%
+    ) else (
+        echo   dependency-check: ^(from PATH^)
+    )
+)
 echo.
 
 REM ---- Step: Validate POM ----
