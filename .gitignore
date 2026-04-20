@@ -1,5 +1,6 @@
 target/**
 validation/target/
+dependency-check-report/
 **/.mvn
 logs/**
 temp/**
