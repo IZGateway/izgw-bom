@@ -76,12 +76,11 @@ jobs:
           fi
           echo "All dependencyManagement versions are property-backed."
 
-      - name: Resolve BOM dependencies (synthetic validation project)
+      - name: Build and resolve BOM dependencies (synthetic validation project)
         run: |
           mvn -B install -N -DskipDependencyCheck=true -DskipTests=true -q
-          mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true -q
-          mvn -B package -f validation/pom.xml -DskipDependencyCheck=true -DskipTests=true -q
-          mvn -B dependency:copy-dependencies -f validation/pom.xml -DoutputDirectory=validation/target/dependency -DskipDependencyCheck=true -q
+          mvn -B clean package -f validation/pom.xml -DskipDependencyCheck=true -DskipTests=true -q
+          mvn -B dependency:copy-dependencies -f validation/pom.xml -DoutputDirectory=validation/target/dependency -DincludeScope=runtime -DskipDependencyCheck=true -q
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           

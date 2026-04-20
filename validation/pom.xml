@@ -13,13 +13,14 @@
     </parent>
 
     <artifactId>izgw-bom-validation</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <name>IZ Gateway BOM — Validation</name>
     <description>
-        Synthetic project that resolves (but does not compile) a representative set of
-        BOM-managed dependencies. Used by CI workflows to verify that every declared
-        version resolves from Maven Central or GitHub Packages.
+        Synthetic project that compiles against a representative set of BOM-managed
+        dependencies. Used by CI workflows to verify that every declared version resolves
+        from Maven Central or GitHub Packages and to allow OWASP Dependency-Check to scan
+        the resolved JARs for known CVEs.
         This project is never published or deployed.
     </description>
 
@@ -294,6 +295,41 @@
     </dependencies>
 
     <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>21</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- This module is never published; skip deploy entirely -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
