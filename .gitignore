@@ -8,4 +8,5 @@ temp/**
 **/.DS_Store
 **/.idea
 **/.env
+**/.env.*
 **/.m2

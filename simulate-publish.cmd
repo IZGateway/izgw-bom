@@ -26,6 +26,9 @@ set SCRIPT_DIR=%~dp0
 set SCRIPT_DIR=%SCRIPT_DIR:~0,-1%
 cd /d "%SCRIPT_DIR%"
 
+REM ---- Load local environment variables if .env.cmd exists ----
+if exist "%SCRIPT_DIR%\.env.cmd" call "%SCRIPT_DIR%\.env.cmd"
+
 REM ---- Defaults ----
 if not defined SKIP_DC set SKIP_DC=0
 
