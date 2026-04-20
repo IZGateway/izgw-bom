@@ -69,22 +69,6 @@ if "%SKIP_DC%"=="0" (
         echo          Get a key at: https://nvd.nist.gov/developers/request-an-api-key
         echo.
     )
-    if defined DC_HOME (
-        if not exist "%DC_CLI%" (
-            echo ERROR: Dependency-Check CLI not found at: %DC_CLI%
-            echo        Check DC_HOME or download from:
-            echo        https://github.com/jeremylong/DependencyCheck/releases
-            exit /b 1
-        )
-    ) else (
-        where dependency-check.bat >nul 2>&1
-        if errorlevel 1 (
-            echo ERROR: dependency-check.bat not found on PATH and DC_HOME is not set.
-            echo        Either add dependency-check\bin to your PATH or set DC_HOME.
-            echo        Download from: https://github.com/jeremylong/DependencyCheck/releases
-            exit /b 1
-        )
-    )
 )
 
 echo   mvn:  OK
@@ -93,7 +77,7 @@ if "%SKIP_DC%"=="0" (
     if defined DC_HOME (
         echo   dependency-check: %DC_CLI%
     ) else (
-        echo   dependency-check: ^(from PATH^)
+        echo   dependency-check: ^(resolved at runtime^)
     )
 )
 echo.
@@ -199,6 +183,13 @@ if defined OSS_INDEX_USERNAME (
 
 call "%DC_CLI%" %DC_ARGS%
 set DC_EXIT=%errorlevel%
+
+if %DC_EXIT%==9009 (
+    echo WARNING: dependency-check could not be found ^(%DC_CLI%^).
+    echo          Ensure dependency-check is on your PATH or set DC_HOME.
+    echo          Download from: https://github.com/jeremylong/DependencyCheck/releases
+    goto :done
+)
 
 echo.
 if %DC_EXIT%==0 (
