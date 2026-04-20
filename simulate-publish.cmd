@@ -17,7 +17,7 @@ REM
 REM Optional environment variables:
 REM   OSS_INDEX_USERNAME  Sonatype OSS Index username (improves scan quality)
 REM   OSS_INDEX_PASSWORD  Sonatype OSS Index password / token
-REM   DC_HOME             Path to dependency-check CLI installation (bin\dependency-check.bat).
+REM   DC_HOME             Path to dependency-check CLI installation (bin\dependency-check.cmd).
 REM                       If not set, dependency-check is resolved from PATH.
 REM   SKIP_DC             Set to 1 to skip the dependency-check scan (build only)
 REM ============================================================
@@ -32,11 +32,11 @@ if exist "%SCRIPT_DIR%\.env.cmd" call "%SCRIPT_DIR%\.env.cmd"
 REM ---- Defaults ----
 if not defined SKIP_DC set SKIP_DC=0
 
-REM Resolve dependency-check command: DC_HOME\bin\dependency-check.bat, or from PATH
+REM Resolve dependency-check command: DC_HOME\bin\dependency-check, or from PATH
 if defined DC_HOME (
-    set DC_CLI=%DC_HOME%\bin\dependency-check.bat
+    set DC_CLI=%DC_HOME%\bin\dependency-check
 ) else (
-    set DC_CLI=dependency-check.bat
+    set DC_CLI=dependency-check
 )
 set REPORT_DIR=%SCRIPT_DIR%\dependency-check-report
 set SUPPRESSION=%SCRIPT_DIR%\dependency-suppression.xml
