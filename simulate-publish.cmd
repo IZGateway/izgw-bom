@@ -8,8 +8,10 @@ REM Simulates the izgw-bom publish CI workflow locally through
 REM the dependency-copy step, then runs OWASP Dependency-Check
 REM CLI against the resolved JARs.
 REM
+REM Assumes ~/.m2/settings.xml already has GitHub Packages
+REM credentials configured (github server entry).
+REM
 REM Required environment variables (set before running):
-REM   GITHUB_TOKEN        GitHub PAT with read:packages scope
 REM   NVD_API_KEY         NVD API key (https://nvd.nist.gov/developers/request-an-api-key)
 REM
 REM Optional environment variables:
@@ -53,12 +55,6 @@ if errorlevel 1 (
     exit /b 1
 )
 
-if not defined GITHUB_TOKEN (
-    echo ERROR: GITHUB_TOKEN is not set.
-    echo        Set it to a GitHub PAT with read:packages scope.
-    exit /b 1
-)
-
 if "%SKIP_DC%"=="0" (
     if not defined NVD_API_KEY (
         echo WARNING: NVD_API_KEY is not set. Dependency-Check will use the public NVD feed
@@ -76,48 +72,11 @@ if "%SKIP_DC%"=="0" (
 
 echo   mvn:  OK
 echo   java: OK
-echo   GITHUB_TOKEN: set
 if "%SKIP_DC%"=="0" echo   DC_HOME: %DC_HOME%
 echo.
 
-REM ---- Ensure ~/.m2/settings.xml has GitHub server entries ----
-echo [2/7] Checking Maven settings for GitHub Packages auth...
-
-set M2_SETTINGS=%USERPROFILE%\.m2\settings.xml
-
-powershell -NoProfile -Command ^
-    "$s='%M2_SETTINGS%'.Replace('\','/'); " ^
-    "if (!(Test-Path $s)) { " ^
-    "  New-Item -ItemType File -Path $s -Force | Out-Null; " ^
-    "  Set-Content $s '<settings><servers></servers></settings>'; " ^
-    "} " ^
-    "$xml=[xml](Get-Content $s); " ^
-    "$ids = $xml.settings.servers.server | ForEach-Object { $_.id }; " ^
-    "if ($ids -notcontains 'github') { Write-Host 'MISSING_GITHUB' } " ^
-    "else { Write-Host 'OK' } " > "%TEMP%\mvn_settings_check.txt" 2>&1
-
-set /p SETTINGS_CHECK=<"%TEMP%\mvn_settings_check.txt"
-del "%TEMP%\mvn_settings_check.txt" >nul 2>&1
-
-if "%SETTINGS_CHECK%"=="MISSING_GITHUB" (
-    echo   Adding github server entry to %M2_SETTINGS%...
-    powershell -NoProfile -Command ^
-        "$s='%M2_SETTINGS%'; " ^
-        "$xml=[xml](Get-Content $s); " ^
-        "$svr=$xml.CreateElement('server'); " ^
-        "$id=$xml.CreateElement('id'); $id.InnerText='github'; " ^
-        "$user=$xml.CreateElement('username'); $user.InnerText='${env.GITHUB_ACTOR}'; " ^
-        "$pass=$xml.CreateElement('password'); $pass.InnerText='${env.GITHUB_TOKEN}'; " ^
-        "$svr.AppendChild($id)|Out-Null; $svr.AppendChild($user)|Out-Null; $svr.AppendChild($pass)|Out-Null; " ^
-        "$xml.settings.servers.AppendChild($svr)|Out-Null; " ^
-        "$xml.Save($s); Write-Host 'Added github server entry.'"
-) else (
-    echo   settings.xml OK ^(github server already present^)
-)
-echo.
-
 REM ---- Step: Validate POM ----
-echo [3/7] Validating POM...
+echo [2/6] Validating POM...
 call mvn -B validate -q
 if errorlevel 1 (
     echo ERROR: mvn validate failed.
@@ -127,7 +86,7 @@ echo   POM is well-formed.
 echo.
 
 REM ---- Step: Check no hardcoded versions in dependencyManagement ----
-echo [4/7] Checking dependencyManagement versions are property-backed...
+echo [3/6] Checking dependencyManagement versions are property-backed...
 powershell -NoProfile -Command ^
     "$content = Get-Content '%SCRIPT_DIR%\pom.xml' -Raw; " ^
     "$block = [regex]::Match($content, '(?s)<dependencyManagement>.*?</dependencyManagement>').Value; " ^
@@ -147,7 +106,7 @@ echo   All dependencyManagement versions are property-backed.
 echo.
 
 REM ---- Step: Install BOM to local repo ----
-echo [5/7] Installing BOM to local Maven repository...
+echo [4/6] Installing BOM to local Maven repository...
 call mvn -B install -N -DskipDependencyCheck=true -DskipTests=true -q
 if errorlevel 1 (
     echo ERROR: mvn install -N failed.
@@ -157,7 +116,7 @@ echo   BOM installed.
 echo.
 
 REM ---- Step: Build validation project + copy runtime deps ----
-echo [6/7] Building validation project and copying runtime dependencies...
+echo [5/6] Building validation project and copying runtime dependencies...
 call mvn -B clean package -f validation\pom.xml -DskipDependencyCheck=true -DskipTests=true -q
 if errorlevel 1 (
     echo ERROR: mvn package on validation project failed.
@@ -181,14 +140,14 @@ echo.
 
 REM ---- Step: OWASP Dependency-Check ----
 if "%SKIP_DC%"=="1" (
-    echo [7/7] Skipping dependency-check scan ^(SKIP_DC=1^).
+    echo [6/6] Skipping dependency-check scan ^(SKIP_DC=1^).
     echo.
     echo Build output ready at: %SCRIPT_DIR%\validation\target\dependency\
     echo To run the scan manually, see the command at the bottom of this script.
     goto :done
 )
 
-echo [7/7] Running OWASP Dependency-Check...
+echo [6/6] Running OWASP Dependency-Check...
 echo   Scan target : %SCRIPT_DIR%\validation
 echo   Report dir  : %REPORT_DIR%
 echo   Suppression : %SUPPRESSION%
