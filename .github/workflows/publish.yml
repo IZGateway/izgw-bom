@@ -117,7 +117,6 @@ jobs:
               --disableNuspec
               --disableNugetconf
               --disableAssembly
-              --disableCentral
 
       - name: Upload CVE report artifact
         if: always()
