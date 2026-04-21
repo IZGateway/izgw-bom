@@ -139,7 +139,7 @@ jobs:
             REPORT_EXISTS=true
           fi
 
-          if [ "$REPORT_EXISTS" = "false" ] then
+          if [ "$REPORT_EXISTS" = "false" ]; then
             echo "::warning::CVE scan failed and no report was produced. The scan may have timed out or encountered an error."
           else
             # Assume report is at dependency-check-report/dependency-check-report.json
