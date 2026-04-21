@@ -130,6 +130,10 @@ jobs:
         run: |
           OUTCOME="${{ steps.cve-scan.outcome }}"
           REPORT_EXISTS=false
+          echo "OUTCOME: $OUTCOME"
+          echo "Report directory listing:"
+          ls -l dependency-check-report || echo "No report directory"
+          
           if compgen -G "dependency-check-report/*.html" > /dev/null 2>&1; then
             REPORT_EXISTS=true
           fi
