@@ -113,6 +113,7 @@ jobs:
               --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
               --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
               --failOnCVSS 7
+              --format JSON
               --nvdApiKey ${{ secrets.NVDAPIKEY }}
               --disableNuspec
               --disableNugetconf
@@ -138,17 +139,28 @@ jobs:
             REPORT_EXISTS=true
           fi
 
-          if [ "$OUTCOME" = "failure" ] && [ "$REPORT_EXISTS" = "true" ]; then
-            echo "::error::CVE scan found vulnerabilities with CVSS >= 7. See the dependency-check-report artifact for details."
-            exit 1
-          elif [ "$OUTCOME" = "failure" ] && [ "$REPORT_EXISTS" = "false" ]; then
+          if [ "$REPORT_EXISTS" = "false" ] then
             echo "::warning::CVE scan failed and no report was produced. The scan may have timed out or encountered an error."
-          elif [ "$OUTCOME" != "success" ] || [ "$REPORT_EXISTS" = "false" ]; then
-            echo "::warning::CVE scan did not produce a report (outcome: $OUTCOME). Vulnerability status is unknown."
           else
-            echo "CVE scan completed successfully."
-          fi
+            # Assume report is at dependency-check-report/dependency-check-report.json
+            REPORT="dependency-check-report/dependency-check-report.json"
+            CVSS_THRESHOLD=7
 
+            # Count vulnerabilities matching the threshold
+            COUNT=$(jq \
+              --argjson threshold $CVSS_THRESHOLD \
+              '[.dependencies[].vulnerabilities[]? | select(.cvssScore >= $threshold)] | length' \
+              "$REPORT")
+
+            echo "Found $COUNT vulnerabilities with CVSS >= $CVSS_THRESHOLD"
+
+            if [ "$COUNT" -gt 0 ]; then
+              echo "::error::CVE scan found vulnerabilities with CVSS >= $CVSS_THRESHOLD. See the JSON report for details."
+              exit 1
+            else
+              echo "CVE scan completed successfully."
+            fi
+          fi
       - name: Build & Publish
         run: mvn -B clean install deploy
         env:
