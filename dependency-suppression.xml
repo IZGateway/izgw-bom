@@ -12,4 +12,36 @@
         Review suppressions regularly and remove any that are no longer needed.
         See: https://jeremylong.github.io/DependencyCheck/general/suppression.html
     -->
+    <suppress>
+        <notes><![CDATA[
+        spring-security-core-6.5.9.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
+        which is not in this project.
+        Added: 2026-04-17
+        ]]></notes>
+        <sha1>a9c374607e9f8593c28dbb93feb4ef1ee32aa527</sha1>
+        <cve>CVE-2018-1258</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        spring-security-crypto-6.5.9.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
+        which is not in this project. The NVD CPE cpe:/a:pivotal_software:spring_security matches all
+        spring-security artifacts including crypto, but the vulnerability is context-specific to framework 5.0.5.
+        Added: 2026-04-20
+        ]]></notes>
+        <sha1>436b30296cf61b7986a9065bf25aee30c60343bd</sha1>
+        <cve>CVE-2018-1258</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        protobuf-java-4.34.1.jar: CVE-2026-0994 is a false positive. The vulnerability is in the Python
+        protobuf library's json_format.ParseDict() function — specifically a recursion-depth counter bug
+        in Python's json_format.py. That code does not exist in the Java implementation. The NVD CPE
+        cpe:/a:google:protobuf is language-agnostic and incorrectly matches the Java artifact.
+        The fix versions cited (5.29.6, 6.33.5) are Python package versions; there is no corresponding
+        Java fix because there is no vulnerability in the Java library.
+        Added: 2026-04-20
+        ]]></notes>
+        <sha1>e3b07cd3be66ec918b9fa4db9863c86d5eeea891</sha1>
+        <cve>CVE-2026-0994</cve>
+    </suppress>
 </suppressions>

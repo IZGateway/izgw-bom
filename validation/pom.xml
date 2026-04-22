@@ -13,13 +13,14 @@
     </parent>
 
     <artifactId>izgw-bom-validation</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <name>IZ Gateway BOM — Validation</name>
     <description>
-        Synthetic project that resolves (but does not compile) a representative set of
-        BOM-managed dependencies. Used by CI workflows to verify that every declared
-        version resolves from Maven Central or GitHub Packages.
+        Synthetic project that compiles against a representative set of BOM-managed
+        dependencies. Used by CI workflows to verify that every declared version resolves
+        from Maven Central or GitHub Packages and to allow OWASP Dependency-Check to scan
+        the resolved JARs for known CVEs.
         This project is never published or deployed.
     </description>
 
@@ -48,6 +49,12 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+
+        <!-- swagger-ui.version -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>swagger-ui</artifactId>
         </dependency>
 
         <!-- tomcat.version -->
@@ -90,6 +97,12 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- log4j2.version -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
         </dependency>
 
         <!-- logback.version -->
@@ -178,7 +191,11 @@
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-base</artifactId>
         </dependency>
-
+        <!-- thymeleaf.version -->
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf</artifactId>
+        </dependency>
         <!-- opencsv.version -->
         <dependency>
             <groupId>com.opencsv</groupId>
@@ -219,6 +236,12 @@
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
+        </dependency>
+
+        <!-- protobuf-java.version -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
         </dependency>
 
         <!-- mysql.version -->
@@ -272,6 +295,41 @@
     </dependencies>
 
     <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>21</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- This module is never published; skip deploy entirely -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
