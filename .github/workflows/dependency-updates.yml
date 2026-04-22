@@ -151,6 +151,7 @@ jobs:
             --disableNuspec
             --disableNugetconf
             --disableAssembly
+            --disableCentral
         env:
           JAVA_HOME: /opt/jdk
 
@@ -397,6 +398,7 @@ jobs:
             --disableNuspec
             --disableNugetconf
             --disableAssembly
+            --disableCentral
         env:
           JAVA_HOME: /opt/jdk
 

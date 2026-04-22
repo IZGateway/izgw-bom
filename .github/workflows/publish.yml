@@ -101,7 +101,7 @@ jobs:
           JAVA_HOME: /opt/jdk
         id: cve-scan
         uses: dependency-check/Dependency-Check_Action@main
-        continue-on-error: true
+        continue-on-error: false
         timeout-minutes: 15
         with:
             project: "izgw-bom-validation"
@@ -118,49 +118,15 @@ jobs:
               --disableNuspec
               --disableNugetconf
               --disableAssembly
+              --disableCentral
 
       - name: Upload CVE report artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dependency-check-report
-          path: dependency-check-report/          
+          path: dependency-check-report/
 
-      - name: Fail build if CVE scan failed or warn if report was not produced
-        if: always()
-        run: |
-          OUTCOME="${{ steps.cve-scan.outcome }}"
-          REPORT_EXISTS=false
-          echo "OUTCOME: $OUTCOME"
-          echo "Report directory listing:"
-          ls -l dependency-check-report || echo "No report directory"
-          
-          if compgen -G "dependency-check-report/*.html" > /dev/null 2>&1; then
-            REPORT_EXISTS=true
-          fi
-
-          if [ "$REPORT_EXISTS" = "false" ]; then
-            echo "::warning::CVE scan failed and no report was produced. The scan may have timed out or encountered an error."
-          else
-            # Assume report is at dependency-check-report/dependency-check-report.json
-            REPORT="dependency-check-report/dependency-check-report.json"
-            CVSS_THRESHOLD=7
-
-            # Count vulnerabilities matching the threshold
-            COUNT=$(jq \
-              --argjson threshold $CVSS_THRESHOLD \
-              '[.dependencies[].vulnerabilities[]? | select(.cvssScore >= $threshold)] | length' \
-              "$REPORT")
-
-            echo "Found $COUNT vulnerabilities with CVSS >= $CVSS_THRESHOLD"
-
-            if [ "$COUNT" -gt 0 ]; then
-              echo "::error::CVE scan found vulnerabilities with CVSS >= $CVSS_THRESHOLD. See the JSON report for details."
-              exit 1
-            else
-              echo "CVE scan completed successfully."
-            fi
-          fi
       - name: Build & Publish
         run: mvn -B clean install deploy
         env:
