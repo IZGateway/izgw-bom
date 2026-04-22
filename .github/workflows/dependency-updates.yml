@@ -82,11 +82,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Resolve BOM dependencies (synthetic validation project)
+      - name: Build and resolve BOM dependencies (synthetic validation project)
         run: |
-          mvn -B install -N -DskipDependencyCheck=true 2>&1 | tee resolve-pre-install.log
-          mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true 2>&1 | tee resolve-pre-validation.log
-          echo "All BOM-declared versions resolved successfully."
+          mvn -B install -N -DskipDependencyCheck=true -DskipTests=true 2>&1 | tee resolve-pre-install.log
+          mvn -B clean package -f validation/pom.xml -DskipDependencyCheck=true -DskipTests=true 2>&1 | tee resolve-pre-validation.log
+          mvn -B dependency:copy-dependencies -f validation/pom.xml \
+            -DoutputDirectory=target/dependency \
+            -DincludeScope=runtime \
+            -DskipDependencyCheck=true -q
+          echo "All BOM-declared versions resolved and JAR dependencies copied successfully."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -116,11 +120,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Get current date for NVD cache key
+        id: date-pre
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Cache Dependency-Check NVD data (pre-update)
+        uses: actions/cache@v4
+        with:
+          path: ~/dependency-check-data
+          key: dependency-check-nvd-${{ runner.os }}-${{ steps.date-pre.outputs.date }}
+          restore-keys: |
+            dependency-check-nvd-${{ runner.os }}-
+
       - name: Pre-update CVE scan
         id: cve-scan-pre
         uses: dependency-check/Dependency-Check_Action@main
         continue-on-error: true
-        timeout-minutes: 10
+        timeout-minutes: 15
         with:
           project: "izgw-bom-validation-pre-update"
           path: "validation"
@@ -131,9 +147,11 @@ jobs:
             --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
             --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
             --failOnCVSS 7
+            --nvdApiKey ${{ secrets.NVDAPIKEY }}
             --disableNuspec
             --disableNugetconf
             --disableAssembly
+            --disableCentral
         env:
           JAVA_HOME: /opt/jdk
 
@@ -319,11 +337,15 @@ jobs:
       # POST-UPDATE PHASE: validate and verify fixes
       # -----------------------------------------------------------------------
 
-      - name: Validate dependency resolution after updates
+      - name: Build and resolve BOM dependencies after updates
         run: |
-          mvn -B install -N -DskipDependencyCheck=true 2>&1 | tee resolve-post-install.log
-          mvn -B dependency:resolve -f validation/pom.xml -DskipDependencyCheck=true 2>&1 | tee resolve-post-validation.log
-          echo "All BOM-declared versions resolved successfully after update."
+          mvn -B install -N -DskipDependencyCheck=true -DskipTests=true 2>&1 | tee resolve-post-install.log
+          mvn -B clean package -f validation/pom.xml -DskipDependencyCheck=true -DskipTests=true 2>&1 | tee resolve-post-validation.log
+          mvn -B dependency:copy-dependencies -f validation/pom.xml \
+            -DoutputDirectory=target/dependency \
+            -DincludeScope=runtime \
+            -DskipDependencyCheck=true -q
+          echo "All BOM-declared versions resolved and JAR dependencies copied successfully after update."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -349,11 +371,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Cache Dependency-Check NVD data (post-update)
+        uses: actions/cache@v4
+        with:
+          path: ~/dependency-check-data
+          key: dependency-check-nvd-${{ runner.os }}-${{ steps.date-pre.outputs.date }}
+          restore-keys: |
+            dependency-check-nvd-${{ runner.os }}-
+
       - name: Post-update CVE scan
         id: cve-scan-post
         uses: dependency-check/Dependency-Check_Action@main
         continue-on-error: true
-        timeout-minutes: 10
+        timeout-minutes: 15
         with:
           project: "izgw-bom-validation-post-update"
           path: "validation"
@@ -364,9 +394,11 @@ jobs:
             --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
             --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
             --failOnCVSS 7
+            --nvdApiKey ${{ secrets.NVDAPIKEY }}
             --disableNuspec
             --disableNugetconf
             --disableAssembly
+            --disableCentral
         env:
           JAVA_HOME: /opt/jdk
 
@@ -390,6 +422,26 @@ jobs:
             fi
           else
             echo "CVE_SUMMARY_POST=Post-update CVE report not found — see workflow logs." >> $GITHUB_ENV
+          fi
+
+      - name: Fail build if post-update CVE scan failed or warn if report was not produced
+        if: always()
+        run: |
+          OUTCOME="${{ steps.cve-scan-post.outcome }}"
+          REPORT_EXISTS=false
+          if compgen -G "dependency-check-report-post/*.html" > /dev/null 2>&1; then
+            REPORT_EXISTS=true
+          fi
+
+          if [ "$OUTCOME" = "failure" ] && [ "$REPORT_EXISTS" = "true" ]; then
+            echo "::error::Post-update CVE scan found vulnerabilities with CVSS >= 7. See the dependency-check-report-post-update artifact for details."
+            exit 1
+          elif [ "$OUTCOME" = "failure" ] && [ "$REPORT_EXISTS" = "false" ]; then
+            echo "::warning::Post-update CVE scan failed and no report was produced. The scan may have timed out or encountered an error."
+          elif [ "$OUTCOME" != "success" ] || [ "$REPORT_EXISTS" = "false" ]; then
+            echo "::warning::Post-update CVE scan did not produce a report (outcome: $OUTCOME). Vulnerability status is unknown."
+          else
+            echo "Post-update CVE scan completed successfully."
           fi
 
       - name: Upload debug artifacts on failure
