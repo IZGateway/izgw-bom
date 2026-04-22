@@ -1,1 +1,0 @@
-C:/Users/boonek/.copilot/projects-in-progress.md
