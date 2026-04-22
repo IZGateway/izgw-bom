@@ -64,10 +64,9 @@ if errorlevel 1 (
 
 if "%SKIP_DC%"=="0" (
     if not defined NVD_API_KEY (
-        echo WARNING: NVD_API_KEY is not set. Dependency-Check will use the public NVD feed
-        echo          which is heavily rate-limited. Scan may be slow or incomplete.
-        echo          Get a key at: https://nvd.nist.gov/developers/request-an-api-key
-        echo.
+        echo ERROR: NVD_API_KEY is not set. Set it before running this script.
+        echo        Get a key at: https://nvd.nist.gov/developers/request-an-api-key
+        exit /b 1
     )
 )
 
