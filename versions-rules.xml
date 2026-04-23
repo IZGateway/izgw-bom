@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   versions-rules.xml
-  Configuration for versions-maven-plugin (display-plugin-updates, display-property-updates).
+  Shared configuration for versions-maven-plugin goals such as
+  display-plugin-updates, display-property-updates, display-dependency-updates,
+  and update-properties.
 
   Rules here constrain which versions the plugin will suggest, supplementing the
   allowMajorUpdates=false / allowMinorUpdates=true global defaults set in pom.xml.
