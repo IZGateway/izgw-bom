@@ -33,6 +33,13 @@
     </suppress>
     <suppress>
         <notes><![CDATA[
+    file name: spring-security-crypto-6.5.10.jar same as 6.5.9 version.
+    ]]></notes>
+        <sha1>dd72e8572e0b52a5674a2f6db153eb01d286a3f5</sha1>
+        <cve>CVE-2018-1258</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
     file name: spring-security-core-6.5.10.jar - similar to 6.5.9 version.
     ]]></notes>
         <sha1>049466e9a45ee1918c575c3d7abb0ce68eb622f6</sha1>
