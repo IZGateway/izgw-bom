@@ -13,6 +13,6 @@
 
 ## 3. Validation
 
-- [ ] 3.1 Run the workflow via `workflow_dispatch` on a test branch and confirm RC/alpha/beta/milestone/SNAPSHOT/CR versions no longer appear in the update logs
-- [ ] 3.2 Verify stable versions (e.g., `4.34.1`, `5.6.15.Final`) still appear as valid update candidates
-- [ ] 3.3 Verify artifacts listed in `automation-exclusions.txt` are still excluded independently of the rules file
+- [x] 3.1 Run the workflow via `workflow_dispatch` on a test branch and confirm RC/alpha/beta/milestone/SNAPSHOT/CR versions no longer appear in the update logs
+- [x] 3.2 Verify stable versions (e.g., `4.34.1`, `5.6.15.Final`) still appear as valid update candidates
+- [x] 3.3 Verify artifacts listed in `automation-exclusions.txt` are still excluded independently of the rules file

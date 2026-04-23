@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Pre-release version exclusion rules file
-The project SHALL include a Maven Versions Plugin rules XML file at `.github/versions-rules.xml` that defines global `ignoreVersion` patterns for pre-release version qualifiers. The rules file SHALL use the Maven Versions Plugin `ruleset` XML schema and contain regex-based ignore patterns covering at minimum the following qualifier families: RC, alpha, beta, milestone (M), SNAPSHOT, and CR (candidate release). All patterns SHALL be case-insensitive.
+The project SHALL include a Maven Versions Plugin rules XML file at `versions-rules.xml` (project root, co-located with `automation-exclusions.txt`) that defines global `ignoreVersion` patterns for pre-release version qualifiers. The rules file SHALL use the Maven Versions Plugin `ruleset` XML schema and contain regex-based ignore patterns covering at minimum the following qualifier families: RC, alpha, beta, milestone (M), SNAPSHOT, and CR (candidate release). All patterns SHALL be case-insensitive.
 
 #### Scenario: Rules file excludes RC versions
 - **WHEN** the Maven Versions Plugin evaluates version `4.35.0-RC1` against the rules file
@@ -39,27 +39,27 @@ The project SHALL include a Maven Versions Plugin rules XML file at `.github/ver
 - **WHEN** the Maven Versions Plugin evaluates versions `4.35.0-RC1`, `4.35.0-rc1`, and `4.35.0-Rc1` against the rules file
 - **THEN** all three versions SHALL be ignored regardless of qualifier casing
 
-### Requirement: Workflow integration of rules file
-The `dependency-updates.yml` workflow SHALL pass `-DrulesUri` referencing the `.github/versions-rules.xml` file to every `mvn versions:*` plugin invocation. This SHALL include `versions:display-property-updates`, `versions:display-plugin-updates`, `versions:display-dependency-updates`, and `versions:update-properties`.
+### Requirement: Plugin configuration of rules file
+The `versions-maven-plugin` configuration in `pom.xml` and `validation/pom.xml` SHALL include a `<rulesUri>` element referencing `versions-rules.xml` at the project root. This ensures all `mvn versions:*` goals — including `versions:display-property-updates`, `versions:display-plugin-updates`, `versions:display-dependency-updates`, and `versions:update-properties` — apply the rules file automatically without requiring `-DrulesUri` CLI flags in the workflow.
 
 #### Scenario: Property update detection excludes pre-release versions
-- **WHEN** the `versions:display-property-updates` goal runs in the workflow
-- **THEN** it SHALL use the `-DrulesUri` parameter pointing to `.github/versions-rules.xml`
+- **WHEN** the `versions:display-property-updates` goal runs
+- **THEN** it SHALL apply the rules from `versions-rules.xml` via the pom.xml plugin configuration
 - **AND** pre-release versions SHALL not appear in the reported available updates
 
 #### Scenario: Plugin update detection excludes pre-release versions
-- **WHEN** the `versions:display-plugin-updates` goal runs in the workflow
-- **THEN** it SHALL use the `-DrulesUri` parameter pointing to `.github/versions-rules.xml`
+- **WHEN** the `versions:display-plugin-updates` goal runs
+- **THEN** it SHALL apply the rules from `versions-rules.xml` via the pom.xml plugin configuration
 - **AND** pre-release versions SHALL not appear in the reported available updates
 
 #### Scenario: Dependency update detection excludes pre-release versions
-- **WHEN** the `versions:display-dependency-updates` goal runs in the workflow
-- **THEN** it SHALL use the `-DrulesUri` parameter pointing to `.github/versions-rules.xml`
+- **WHEN** the `versions:display-dependency-updates` goal runs
+- **THEN** it SHALL apply the rules from `versions-rules.xml` via the pom.xml plugin configuration
 - **AND** pre-release versions SHALL not appear in the reported available updates
 
 #### Scenario: Property update application excludes pre-release versions
-- **WHEN** the `versions:update-properties` goal runs in the workflow
-- **THEN** it SHALL use the `-DrulesUri` parameter pointing to `.github/versions-rules.xml`
+- **WHEN** the `versions:update-properties` goal runs
+- **THEN** it SHALL apply the rules from `versions-rules.xml` via the pom.xml plugin configuration
 - **AND** no pre-release versions SHALL be written into `pom.xml` properties
 
 ### Requirement: Coexistence with artifact-level exclusions
