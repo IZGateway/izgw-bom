@@ -33,6 +33,13 @@
     </suppress>
     <suppress>
         <notes><![CDATA[
+    file name: spring-security-core-6.5.10.jar - similar to 6.5.9 version.
+    ]]></notes>
+        <sha1>049466e9a45ee1918c575c3d7abb0ce68eb622f6</sha1>
+        <cve>CVE-2018-1258</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
         protobuf-java-4.34.1.jar: CVE-2026-0994 is a false positive. The vulnerability is in the Python
         protobuf library's json_format.ParseDict() function — specifically a recursion-depth counter bug
         in Python's json_format.py. That code does not exist in the Java implementation. The NVD CPE
