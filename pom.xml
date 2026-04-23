@@ -15,9 +15,9 @@
     
     <properties>
         <!-- Spring Boot and Framework versions -->
-        <spring-boot.version>3.5.13</spring-boot.version>
+        <spring-boot.version>3.5.14</spring-boot.version>
         <spring-framework.version>6.2.18</spring-framework.version>
-        <spring-security.version>6.5.9</spring-security.version>
+        <spring-security.version>6.5.10</spring-security.version>
         <springdoc.version>2.8.17</springdoc.version>
         <swagger-ui.version>5.32.4</swagger-ui.version>
         <tomcat.version>10.1.54</tomcat.version>
@@ -43,7 +43,7 @@
         <httpclient.version>5.6.1</httpclient.version>
         <!-- Apache Commons -->
         <commons-lang3.version>3.20.0</commons-lang3.version>
-        <commons-io.version>2.21.0</commons-io.version>
+        <commons-io.version>2.22.0</commons-io.version>
         <commons-compress.version>1.28.0</commons-compress.version>
         <commons-text.version>1.15.0</commons-text.version>
         <commons-validator.version>1.10.1</commons-validator.version>
@@ -52,9 +52,9 @@
         <!-- HAPI -->
         <hapi-v2.version>2.6.0</hapi-v2.version>
         <hapi-fhir.version>8.8.1</hapi-fhir.version>
-        <hl7-fhir.version>6.9.6</hl7-fhir.version>
+        <hl7-fhir.version>6.9.7</hl7-fhir.version>
         <opencsv.version>5.12.0</opencsv.version>
-        <thymeleaf.version>3.1.4.RELEASE</thymeleaf.version>
+        <thymeleaf.version>3.1.5.RELEASE</thymeleaf.version>
         <!-- ulidj -->
         <ulidj.version>1.1.0</ulidj.version>
         <!-- Validation -->
@@ -64,8 +64,8 @@
         <!-- JWT Support -->
         <nimbus-jose-jwt.version>10.9</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
-        <mysql.version>9.6.0</mysql.version>
-        <aws-sdk.version>2.42.38</aws-sdk.version>
+        <mysql.version>9.7.0</mysql.version>
+        <aws-sdk.version>2.42.39</aws-sdk.version>
         <camel.version>4.18.0</camel.version>
         <lombok.version>1.18.46</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
