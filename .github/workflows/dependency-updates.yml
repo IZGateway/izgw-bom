@@ -65,7 +65,6 @@ jobs:
             -DallowMinorUpdates=true \
             -DallowIncrementalUpdates=true \
             -Dexcludes="${{ env.EXCLUDES }}" \
-            -DrulesUri="file:///${GITHUB_WORKSPACE}/versions-rules.xml" \
             | tee property-updates.log \
             | grep -E 'The following|->|\[INFO\] *$' || echo "(none found)"
         env:
@@ -78,7 +77,6 @@ jobs:
             -DallowMajorUpdates=false \
             -DallowMinorUpdates=true \
             -DallowIncrementalUpdates=true \
-            -DrulesUri="file:///${GITHUB_WORKSPACE}/versions-rules.xml" \
             | tee plugin-updates.log \
             | grep -E 'The following|->|\[INFO\] *$' || echo "(none found)"
         env:
@@ -118,7 +116,6 @@ jobs:
             -DallowIncrementalUpdates=true \
             -DskipDependencyCheck=true \
             -Dexcludes="${{ env.EXCLUDES }}" \
-            -DrulesUri="file:///${GITHUB_WORKSPACE}/versions-rules.xml" \
             2>&1 | tee dependency-updates-pre.log
           grep -E 'The following|->|\[INFO\] *$' dependency-updates-pre.log || echo "(none found)"
         env:
@@ -192,7 +189,6 @@ jobs:
             -DallowMinorUpdates=true \
             -DallowIncrementalUpdates=true \
             -Dexcludes="${{ env.EXCLUDES }}" \
-            -DrulesUri="file:///${GITHUB_WORKSPACE}/versions-rules.xml" \
             -DgenerateBackupPoms=false \
             2>&1 | tee apply-updates.log
 
