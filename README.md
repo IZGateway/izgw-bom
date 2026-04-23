@@ -1,5 +1,6 @@
 # IZ Gateway Bill of Materials (BOM)
 
+
 This repository contains a Maven Bill of Materials (BOM) POM that provides centralized dependency management for all IZ Gateway projects.
 
 ## Features
