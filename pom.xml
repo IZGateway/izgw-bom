@@ -22,7 +22,7 @@
         <swagger-ui.version>5.32.5</swagger-ui.version>
         <tomcat.version>10.1.54</tomcat.version>
         <!-- Jackson JSON processing -->
-        <jackson.version>2.21.2</jackson.version>
+        <jackson.version>2.21.3</jackson.version>
         <jackson-annotations.version>2.21</jackson-annotations.version>
         <!-- STAX Processing (used in HAPI) -->
         <stax2.version>4.3.0</stax2.version>
@@ -65,7 +65,7 @@
         <nimbus-jose-jwt.version>10.9</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.43.0</aws-sdk.version>
+        <aws-sdk.version>2.44.0</aws-sdk.version>
         <camel.version>4.18.2</camel.version>
         <lombok.version>1.18.46</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
