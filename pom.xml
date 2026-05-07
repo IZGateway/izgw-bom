@@ -7,7 +7,7 @@
 
     <groupId>gov.cdc.izgw</groupId>
     <artifactId>izgw-bom</artifactId>
-    <version>1.6.0</version>
+    <version>1.7.0</version>
     <packaging>pom</packaging>
 
     <name>IZ Gateway Bill of Materials</name>
@@ -15,31 +15,35 @@
     
     <properties>
         <!-- Spring Boot and Framework versions -->
-        <spring-boot.version>3.5.13</spring-boot.version>
-        <spring-framework.version>6.2.17</spring-framework.version>
-        <spring-security.version>6.5.9</spring-security.version>
+        <spring-boot.version>3.5.14</spring-boot.version>
+        <spring-framework.version>6.2.18</spring-framework.version>
+        <spring-security.version>6.5.10</spring-security.version>
         <springdoc.version>2.8.17</springdoc.version>
+        <swagger-ui.version>5.32.5</swagger-ui.version>
         <tomcat.version>10.1.54</tomcat.version>
         <!-- Jackson JSON processing -->
-        <jackson.version>2.21.2</jackson.version>
+        <jackson.version>2.21.3</jackson.version>
         <jackson-annotations.version>2.21</jackson-annotations.version>
         <!-- STAX Processing (used in HAPI) -->
         <stax2.version>4.3.0</stax2.version>
         <saxon.version>12.9</saxon.version>
         <!-- Netty -->
-        <netty.version>4.2.12.Final</netty.version>
+        <netty.version>4.2.13.Final</netty.version>
+        <!-- Protobuf -->
+        <protobuf-java.version>4.34.1</protobuf-java.version>
         <!-- Logging -->
+        <log4j2.version>2.25.4</log4j2.version>
         <slf4j.version>2.0.17</slf4j.version>
         <logback.version>1.5.32</logback.version>
         <!-- Testing -->
-        <junit.version>5.14.3</junit.version>
+        <junit.version>5.14.4</junit.version>
         <mockito.version>5.23.0</mockito.version>
         <testcontainers.version>1.21.4</testcontainers.version>
         <!-- HTTP Client -->
-        <httpclient.version>5.6</httpclient.version>
+        <httpclient.version>5.6.1</httpclient.version>
         <!-- Apache Commons -->
         <commons-lang3.version>3.20.0</commons-lang3.version>
-        <commons-io.version>2.21.0</commons-io.version>
+        <commons-io.version>2.22.0</commons-io.version>
         <commons-compress.version>1.28.0</commons-compress.version>
         <commons-text.version>1.15.0</commons-text.version>
         <commons-validator.version>1.10.1</commons-validator.version>
@@ -48,8 +52,9 @@
         <!-- HAPI -->
         <hapi-v2.version>2.6.0</hapi-v2.version>
         <hapi-fhir.version>8.8.1</hapi-fhir.version>
-        <hl7-fhir.version>6.9.6</hl7-fhir.version>
+        <hl7-fhir.version>6.9.7</hl7-fhir.version>
         <opencsv.version>5.12.0</opencsv.version>
+        <thymeleaf.version>3.1.5.RELEASE</thymeleaf.version>
         <!-- ulidj -->
         <ulidj.version>1.1.0</ulidj.version>
         <!-- Validation -->
@@ -59,10 +64,10 @@
         <!-- JWT Support -->
         <nimbus-jose-jwt.version>10.9</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
-        <mysql.version>9.6.0</mysql.version>
-        <aws-sdk.version>2.42.34</aws-sdk.version>
-        <camel.version>4.18.0</camel.version>
-        <lombok.version>1.18.44</lombok.version>
+        <mysql.version>9.7.0</mysql.version>
+        <aws-sdk.version>2.44.3</aws-sdk.version>
+        <camel.version>4.18.2</camel.version>
+        <lombok.version>1.18.46</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
         <bc-fips.version>2.1.2</bc-fips.version>
         <bcpkix-fips.version>2.1.9</bcpkix-fips.version>
@@ -142,6 +147,20 @@
                 <version>${aws-sdk.version}</version>
             </dependency>
             
+            <!-- Protobuf -->
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf-java.version}</version>
+            </dependency>
+
+            <!-- Swagger UI (overrides version managed transitively by springdoc) -->
+            <dependency>
+                <groupId>org.webjars</groupId>
+                <artifactId>swagger-ui</artifactId>
+                <version>${swagger-ui.version}</version>
+            </dependency>
+
             <!-- Spring Boot and Spring Framework stuff -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -256,6 +275,31 @@
                 <artifactId>hibernate-validator</artifactId>
                 <version>${hibernate-validator.version}</version>
             </dependency>
+            <!-- Log4j2 — explicit entries required; the log4j2.version property alone is not enough
+                 because this BOM does not extend spring-boot-starter-parent, so the Spring Boot
+                 property-override mechanism never fires. Without these entries the version falls
+                 back to whatever spring-boot-dependencies manages (currently 2.24.3). -->
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-to-slf4j</artifactId>
+                <version>${log4j2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j2-impl</artifactId>
+                <version>${log4j2.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
@@ -631,7 +675,11 @@
                 <artifactId>org.hl7.fhir.validation</artifactId>
                 <version>${hl7-fhir.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.thymeleaf</groupId>
+                <artifactId>thymeleaf</artifactId>
+                <version>${thymeleaf.version}</version>
+            </dependency>
             <dependency>
                 <groupId>net.sf.saxon</groupId>
                 <artifactId>Saxon-HE</artifactId>
@@ -793,7 +841,7 @@
                         <allowMinorUpdates>true</allowMinorUpdates>
                         <allowIncrementalUpdates>true</allowIncrementalUpdates>
                         <generateBackupPoms>false</generateBackupPoms>
-                        <rulesUri>file:///${maven.multiModuleProjectDirectory}/.github/versions-rules.xml</rulesUri>
+                        <rulesUri>file:///${maven.multiModuleProjectDirectory}/versions-rules.xml</rulesUri>
                     </configuration>
                 </plugin>
             </plugins>

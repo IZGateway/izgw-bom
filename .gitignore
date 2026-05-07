@@ -1,5 +1,6 @@
 target/**
 validation/target/
+dependency-check-report/
 **/.mvn
 logs/**
 temp/**
@@ -8,4 +9,7 @@ temp/**
 **/.DS_Store
 **/.idea
 **/.env
+**/.env.*
 **/.m2
+projects-in-progress.md
+
