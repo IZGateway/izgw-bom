@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-05-07
+
+### Changes
+- chore(deps): automated dependency updates 2026-05-07 ([#65](https://github.com/IZGateway/izgw-bom/pull/65))
+- chore(deps): automated dependency updates 2026-05-06 ([#64](https://github.com/IZGateway/izgw-bom/pull/64))
+- chore(deps): automated dependency updates 2026-05-05 ([#63](https://github.com/IZGateway/izgw-bom/pull/63))
+- chore: Bump camel version ([#61](https://github.com/IZGateway/izgw-bom/pull/61))
+- chore(deps): automated dependency updates 2026-04-28 ([#60](https://github.com/IZGateway/izgw-bom/pull/60))
+- chore(deps): automated dependency updates 2026-04-27 ([#59](https://github.com/IZGateway/izgw-bom/pull/59))
+- chore(deps): automated dependency updates 2026-04-24 ([#58](https://github.com/IZGateway/izgw-bom/pull/58))
+- chore(deps): automated dependency updates 2026-04-23 ([#57](https://github.com/IZGateway/izgw-bom/pull/57))
+- chore: Update dependency update process to use versions-rules.xml to restrict release candidates ([#55](https://github.com/IZGateway/izgw-bom/pull/55))
+- chore(deps): bump org.apache.logging.log4j:log4j-core from 2.25.3 to 2.25.4 ([#52](https://github.com/IZGateway/izgw-bom/pull/52))
+- chore(deps): automated dependency updates 2026-04-22 ([#51](https://github.com/IZGateway/izgw-bom/pull/51))
+- chore: add Thymeleaf dependency to pom.xml ([#48](https://github.com/IZGateway/izgw-bom/pull/48))
+- chore(deps): automated dependency updates 2026-04-21 ([#50](https://github.com/IZGateway/izgw-bom/pull/50))
+- chore(deps): automated dependency updates 2026-04-20 ([#49](https://github.com/IZGateway/izgw-bom/pull/49))
+- chore(deps): automated dependency updates 2026-04-17 ([#47](https://github.com/IZGateway/izgw-bom/pull/47))
+
 ## [1.6.0] - 2026-04-14
 
 ### Changes
