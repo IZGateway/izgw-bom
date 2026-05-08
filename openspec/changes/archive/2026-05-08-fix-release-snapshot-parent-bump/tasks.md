@@ -22,7 +22,7 @@ The `Set release version` and `Update develop branch` steps previously interpola
 
 ## 3. PR and rollout
 
-- [ ] 3.1 Open the PR against `develop` after the user's separate one-line `validation/pom.xml` parent-version PR has merged (so the nightly is already unblocked and this change can be reviewed on a stable baseline)
-- [ ] 3.2 In the PR description, link to this change folder (`openspec/changes/fix-release-snapshot-parent-bump/`) and call out that the next standard release will exercise the new code path end-to-end
-- [ ] 3.3 After merge, monitor the next standard release run for: (a) both "prepare release X.Y.Z" and "bump version to X.(Y+1).0-SNAPSHOT" commits modifying `pom.xml` AND `validation/pom.xml`, and (b) the read-back assertion log lines being present and showing matches
-- [ ] 3.4 After the next standard release completes, confirm the following nightly `dependency-updates.yml` run resolves the parent BOM successfully (no `Non-resolvable parent POM` error)
+- [x] 3.1 Open the PR against `develop` after the user's separate one-line `validation/pom.xml` parent-version PR has merged (so the nightly is already unblocked and this change can be reviewed on a stable baseline)
+- [x] 3.2 In the PR description, link to this change folder (`openspec/changes/fix-release-snapshot-parent-bump/`) and call out that the next standard release will exercise the new code path end-to-end
+- [x] 3.3 After merge, monitor the next standard release run for: (a) both "prepare release X.Y.Z" and "bump version to X.(Y+1).0-SNAPSHOT" commits modifying `pom.xml` AND `validation/pom.xml`, and (b) the read-back assertion log lines being present and showing matches
+- [x] 3.4 After the next standard release completes, confirm the following nightly `dependency-updates.yml` run resolves the parent BOM successfully (no `Non-resolvable parent POM` error)
