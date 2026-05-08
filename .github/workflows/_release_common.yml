@@ -236,16 +236,36 @@ jobs:
       - name: Set release version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_VERSION: ${{ inputs.release-version }}
+          RELEASE_BRANCH: ${{ steps.validate.outputs.release_branch }}
         run: |
-          echo "Setting version to ${{ inputs.release-version }}"
-          mvn versions:set -DnewVersion=${{ inputs.release-version }} -DgenerateBackupPoms=false
+          echo "Setting version to $RELEASE_VERSION"
+          mvn versions:set -DnewVersion="$RELEASE_VERSION" -DgenerateBackupPoms=false
           # Install root POM to local repo so validation project can resolve it
           mvn -B install -N -DskipDependencyCheck=true
-          # Update validation project parent version to match (not a reactor module)
-          mvn versions:update-parent -f validation/pom.xml -DparentVersion=${{ inputs.release-version }} -DgenerateBackupPoms=false
+          # Update validation project parent version to match (not a reactor module).
+          # `versions:update-parent` silently no-ops on snapshot targets; xmlstarlet does a literal edit.
+          # `-N pom=...` and `pom:` prefix required: validation/pom.xml declares xmlns="http://maven.apache.org/POM/4.0.0".
+          sudo apt-get install -qq -y xmlstarlet
+          xmlstarlet ed --inplace \
+            -N pom=http://maven.apache.org/POM/4.0.0 \
+            -u "/pom:project/pom:parent/pom:version" \
+            -v "$RELEASE_VERSION" \
+            validation/pom.xml
+          ACTUAL=$(xmlstarlet sel \
+            -N pom=http://maven.apache.org/POM/4.0.0 \
+            -t -v "/pom:project/pom:parent/pom:version" \
+            validation/pom.xml)
+          if [ "$ACTUAL" != "$RELEASE_VERSION" ]; then
+            echo "::error::validation/pom.xml parent version not synchronized after edit."
+            echo "Expected: $RELEASE_VERSION"
+            echo "Actual:   $ACTUAL"
+            exit 1
+          fi
+          echo "Verified validation/pom.xml parent version is now $RELEASE_VERSION"
           git add pom.xml validation/pom.xml
-          git commit -m "chore: prepare release ${{ inputs.release-version }}"
-          git push origin "${{ steps.validate.outputs.release_branch }}"
+          git commit -m "chore: prepare release $RELEASE_VERSION"
+          git push origin "$RELEASE_BRANCH"
           echo "Release version set and committed"
 
       - name: Calculate next SNAPSHOT version
@@ -307,6 +327,9 @@ jobs:
           echo "Tag created on main"
 
       - name: Update develop branch
+        env:
+          RELEASE_BRANCH: ${{ steps.validate.outputs.release_branch }}
+          NEXT_SNAPSHOT_VERSION: ${{ steps.next-version.outputs.next_snapshot_version }}
         run: |
           echo "Updating develop branch..."
 
@@ -343,18 +366,36 @@ jobs:
           # Use -X ours to prefer develop's version for conflicts (e.g., pom.xml version)
           # During hotfix merges, develop may already be working on a newer version
           echo "Merging release branch to develop for RELEASE_NOTES updates..."
-          git merge --no-ff -X ours "${{ steps.validate.outputs.release_branch }}" -m "Merge release branch ${{ steps.validate.outputs.release_branch }} to develop"
+          git merge --no-ff -X ours "$RELEASE_BRANCH" -m "Merge release branch $RELEASE_BRANCH to develop"
 
           # Bump to next SNAPSHOT version (only for standard releases)
-          if [[ -n "${{ steps.next-version.outputs.next_snapshot_version }}" ]]; then
-            echo "Bumping to next SNAPSHOT version: ${{ steps.next-version.outputs.next_snapshot_version }}"
-            mvn versions:set -DnewVersion=${{ steps.next-version.outputs.next_snapshot_version }} -DgenerateBackupPoms=false
+          if [[ -n "$NEXT_SNAPSHOT_VERSION" ]]; then
+            echo "Bumping to next SNAPSHOT version: $NEXT_SNAPSHOT_VERSION"
+            mvn versions:set -DnewVersion="$NEXT_SNAPSHOT_VERSION" -DgenerateBackupPoms=false
             # Install root POM to local repo so validation project can resolve it
             mvn -B install -N -DskipDependencyCheck=true
-            # Update validation project parent version to match (not a reactor module)
-            mvn versions:update-parent -f validation/pom.xml -DparentVersion=${{ steps.next-version.outputs.next_snapshot_version }} -DallowSnapshots=true -DgenerateBackupPoms=false
+            # Update validation project parent version to match (not a reactor module).
+            # `versions:update-parent` silently no-ops on snapshot targets; xmlstarlet does a literal edit.
+            # `-N pom=...` and `pom:` prefix required: validation/pom.xml declares xmlns="http://maven.apache.org/POM/4.0.0".
+            sudo apt-get install -qq -y xmlstarlet
+            xmlstarlet ed --inplace \
+              -N pom=http://maven.apache.org/POM/4.0.0 \
+              -u "/pom:project/pom:parent/pom:version" \
+              -v "$NEXT_SNAPSHOT_VERSION" \
+              validation/pom.xml
+            ACTUAL=$(xmlstarlet sel \
+              -N pom=http://maven.apache.org/POM/4.0.0 \
+              -t -v "/pom:project/pom:parent/pom:version" \
+              validation/pom.xml)
+            if [ "$ACTUAL" != "$NEXT_SNAPSHOT_VERSION" ]; then
+              echo "::error::validation/pom.xml parent version not synchronized after edit."
+              echo "Expected: $NEXT_SNAPSHOT_VERSION"
+              echo "Actual:   $ACTUAL"
+              exit 1
+            fi
+            echo "Verified validation/pom.xml parent version is now $NEXT_SNAPSHOT_VERSION"
             git add pom.xml validation/pom.xml
-            git commit -m "chore: bump version to ${{ steps.next-version.outputs.next_snapshot_version }}"
+            git commit -m "chore: bump version to $NEXT_SNAPSHOT_VERSION"
           else
             echo "No next-snapshot-version specified (hotfix release), skipping version bump on develop"
           fi

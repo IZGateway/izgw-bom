@@ -11,7 +11,7 @@ The asymmetry is empirical: `versions:update-parent` queries remote repositories
 
 The hotfix release path (`hotfix.yml`) reuses `_release_common.yml`. It runs step 1 but not step 2 (the workflow guards step 2 behind `next-snapshot-version` being set, which only standard releases provide).
 
-The workflow already uses `xmlstarlet` elsewhere (`dependency-updates.yml` installs it on the fly and uses it to edit `pom.xml` deterministically).
+The workflow already references `xmlstarlet` elsewhere (`dependency-updates.yml` installs it on the fly inside its auto-fix-transitives code path), so the tool is a known quantity for this repo's CI.
 
 ## Goals / Non-Goals
 
@@ -33,17 +33,18 @@ Replace both invocations of `mvn versions:update-parent -f validation/pom.xml ..
 
 ```bash
 xmlstarlet ed --inplace \
-    -u "/project/parent/version" \
+    -N pom=http://maven.apache.org/POM/4.0.0 \
+    -u "/pom:project/pom:parent/pom:version" \
     -v "$TARGET_VERSION" \
     validation/pom.xml
 ```
 
-**Rationale:** xmlstarlet performs a literal XPath-targeted text edit. It never queries any repository, never inspects metadata, and has no special handling for snapshot vs. release versions — directly satisfying the "does not depend on remote metadata" requirement. The same XPath shape is already in use in `dependency-updates.yml` against the same project layout, confirming it works here.
+**Rationale:** xmlstarlet performs a literal XPath-targeted text edit. It never queries any repository, never inspects metadata, and has no special handling for snapshot vs. release versions — directly satisfying the "does not depend on remote metadata" requirement. The `-N pom=...` declaration and `pom:` prefix on each XPath segment are required because `validation/pom.xml` declares `xmlns="http://maven.apache.org/POM/4.0.0"` as its default namespace; XPath without a namespace declaration silently does not match elements in a default namespace and the edit becomes a no-op. This was empirically verified against `validation/pom.xml` on this branch (both edit and read-back behave correctly with the namespace prefix; both fail to match without it).
 
 **Alternatives considered:**
 - **`mvn versions:set -DartifactId=izgw-bom -DnewVersion=$V -DupdateMatchingVersions=false`**: still goes through the versions plugin, still risks remote-metadata behavior, harder to reason about.
 - **`sed -i 's|<version>OLD</version>|<version>NEW</version>|' validation/pom.xml`**: brittle. The file contains other `<version>` elements (none today, but no structural protection); needs context-aware matching that re-invents what XPath gives us for free.
-- **Hand-rolled Python/Node script**: more dependencies than necessary; xmlstarlet is a single apt package and is already proven in this repo.
+- **Hand-rolled Python/Node script**: more dependencies than necessary; xmlstarlet is a single apt package and is already in use in this repo's CI scripts.
 
 ### D2: Apply the xmlstarlet edit to BOTH the release-version step and the next-snapshot step
 
@@ -60,7 +61,10 @@ The release-version step works today, but for empirical rather than principled r
 Immediately after each `xmlstarlet ed` call, read the value back and fail loudly on mismatch:
 
 ```bash
-ACTUAL=$(xmlstarlet sel -t -v "/project/parent/version" validation/pom.xml)
+ACTUAL=$(xmlstarlet sel \
+    -N pom=http://maven.apache.org/POM/4.0.0 \
+    -t -v "/pom:project/pom:parent/pom:version" \
+    validation/pom.xml)
 if [ "$ACTUAL" != "$TARGET_VERSION" ]; then
   echo "::error::validation/pom.xml parent version not synchronized."
   echo "Expected: $TARGET_VERSION"
@@ -87,8 +91,8 @@ A "proper" Maven solution would make `validation/` a `<module>` of the parent BO
 
 ## Risks / Trade-offs
 
-- **Risk:** xmlstarlet's XPath without an explicit namespace prefix may not match elements in the default `http://maven.apache.org/POM/4.0.0` namespace on some xmlstarlet builds.
-  → **Mitigation:** the same XPath pattern (`/project/...`) is already in production use in `dependency-invocation.yml` against this project's poms; the workflow runs on `ubuntu-latest` with a stable apt source. If a future runner image changes behavior, the verification step (D3) will catch it on the very next release run.
+- **Risk:** xmlstarlet XPath without a namespace declaration silently does not match elements in `validation/pom.xml`'s default namespace and the edit becomes a no-op (empirically confirmed on this branch). A future contributor copying the surrounding pattern without the `-N pom=...` flag and `pom:` prefixes would reintroduce the silent-no-op class of failure.
+  → **Mitigation:** the read-back assertion in D3 fails loudly on any mismatch (including the empty string returned by a no-match XPath), so even an XPath regression cannot ship a stale `validation/pom.xml`. The design's code blocks include the namespace declaration prominently, and the implementation comments will reference this gotcha.
 
 - **Risk:** Replacing the working release-version step (D2) introduces regression risk on a path that has not failed before.
   → **Mitigation:** the verification step (D3) runs after the edit, so any regression fails the release immediately. The new mechanism is also strictly simpler than the one being replaced.
