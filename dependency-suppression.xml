@@ -70,4 +70,11 @@
         <sha1>6d5d7c2261b26586e772f7fd2d27716272ef7bdd</sha1>
         <cve>CVE-2026-0994</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+    file name: camel-validator-4.18.2.jar
+    ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.camel/camel-validator@.*$</packageUrl>
+        <cpe>cpe:/a:apache:camel</cpe>
+    </suppress>
 </suppressions>
