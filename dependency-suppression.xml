@@ -52,15 +52,22 @@
     </suppress>
     <suppress>
         <notes><![CDATA[
-        protobuf-java-4.34.1.jar: CVE-2026-0994 is a false positive. The vulnerability is in the Python
-        protobuf library's json_format.ParseDict() function — specifically a recursion-depth counter bug
-        in Python's json_format.py. That code does not exist in the Java implementation. The NVD CPE
-        cpe:/a:google:protobuf is language-agnostic and incorrectly matches the Java artifact.
-        The fix versions cited (5.29.6, 6.33.5) are Python package versions; there is no corresponding
-        Java fix because there is no vulnerability in the Java library.
-        Added: 2026-04-20
+        protobuf-java (all versions): the NVD CPE cpe:/a:google:protobuf is a cross-language CPE
+        that NVD assigns to every Google Protobuf CVE regardless of which language binding is
+        actually affected. This causes Python-only and C++-only CVEs to incorrectly match the
+        Java protobuf-java artifact. The originating example is CVE-2026-0994, which is a bug
+        in the Python protobuf library's json_format.ParseDict() function (a recursion-depth
+        counter bug in json_format.py) — code that does not exist in the Java implementation.
+        Fix versions cited there (5.29.6, 6.33.5) are Python package versions.
+
+        This entry suppresses the entire cpe:/a:google:protobuf CPE association for all
+        versions of pkg:maven/com.google.protobuf/protobuf-java, so future Python-only or
+        C++-only CVEs under the same CPE do not require a new suppression entry per version
+        bump. A genuine Java-implementation CVE would be filed under a Java-specific CPE
+        (e.g. cpe:/a:google:protobuf-java) and would not be hidden by this rule.
+        Added: 2026-05-22
         ]]></notes>
-        <sha1>e3b07cd3be66ec918b9fa4db9863c86d5eeea891</sha1>
-        <cve>CVE-2026-0994</cve>
+        <packageUrl regex="true">^pkg:maven/com\.google\.protobuf/protobuf-java@.*$</packageUrl>
+        <cpe>cpe:/a:google:protobuf</cpe>
     </suppress>
 </suppressions>

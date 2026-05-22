@@ -145,8 +145,7 @@ jobs:
           out: "dependency-check-report-pre"
           args: >
             --suppression /github/workspace/dependency-suppression.xml
-            --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
-            --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
+            --disableOssIndex
             --failOnCVSS 7
             --nvdApiKey ${{ secrets.NVDAPIKEY }}
             --disableNuspec
@@ -392,8 +391,7 @@ jobs:
           out: "dependency-check-report-post"
           args: >
             --suppression /github/workspace/dependency-suppression.xml
-            --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
-            --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
+            --disableOssIndex
             --failOnCVSS 7
             --nvdApiKey ${{ secrets.NVDAPIKEY }}
             --disableNuspec
