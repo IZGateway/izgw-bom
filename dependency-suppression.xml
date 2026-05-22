@@ -52,22 +52,34 @@
     </suppress>
     <suppress>
         <notes><![CDATA[
-        protobuf-java (all versions): the NVD CPE cpe:/a:google:protobuf is a cross-language CPE
-        that NVD assigns to every Google Protobuf CVE regardless of which language binding is
-        actually affected. This causes Python-only and C++-only CVEs to incorrectly match the
-        Java protobuf-java artifact. The originating example is CVE-2026-0994, which is a bug
-        in the Python protobuf library's json_format.ParseDict() function (a recursion-depth
-        counter bug in json_format.py) — code that does not exist in the Java implementation.
-        Fix versions cited there (5.29.6, 6.33.5) are Python package versions.
+        protobuf-java (all versions): cpe:2.3:a:google:protobuf:* and
+        cpe:2.3:a:protobuf:protobuf:* are cross-language CPEs that NVD assigns to Google
+        Protobuf CVEs regardless of which language binding is actually affected. They
+        incorrectly match the Java protobuf-java artifact for Python-only and C++-only
+        CVEs. The originating example is CVE-2026-0994, a recursion-depth counter bug
+        in the Python protobuf library's json_format.ParseDict() function — code that
+        does not exist in the Java implementation. Fix versions cited there (5.29.6,
+        6.33.5) are Python package versions.
 
-        This entry suppresses the entire cpe:/a:google:protobuf CPE association for all
-        versions of pkg:maven/com.google.protobuf/protobuf-java, so future Python-only or
-        C++-only CVEs under the same CPE do not require a new suppression entry per version
-        bump. A genuine Java-implementation CVE would be filed under a Java-specific CPE
-        (e.g. cpe:/a:google:protobuf-java) and would not be hidden by this rule.
+        This entry suppresses both cross-language CPE prefixes for any protobuf-java
+        JAR (matched by filename via <filePath regex>). Genuine Java-implementation
+        CVEs would be filed under the Java-specific cpe:2.3:a:google:protobuf-java:*
+        CPE, which is NOT covered by this rule.
+
+        Implementation note: <filePath regex> + <cpe> (CPE 2.3 form, prefix match) is
+        used rather than <packageUrl regex> + <cpe> (2.2 form) because the publish and
+        nightly workflows run Dependency-Check with --disableCentral. Without the
+        Central Analyzer, bare JARs in validation/target/dependency/ are not enriched
+        with PURL identifiers, so a packageUrl matcher never fires. Vulnerability IDs
+        in the report are emitted in CPE 2.3 form (cpe:2.3:a:...), and Dependency-
+        Check's non-regex <cpe> matcher does a case-insensitive startsWith against
+        that form. The trailing ':' in each <cpe> value distinguishes the
+        cross-language 'protobuf' product from the Java-specific 'protobuf-java'
+        product so the latter remains scannable.
         Added: 2026-05-22
         ]]></notes>
-        <packageUrl regex="true">^pkg:maven/com\.google\.protobuf/protobuf-java@.*$</packageUrl>
-        <cpe>cpe:/a:google:protobuf</cpe>
+        <filePath regex="true">.*[/\\]protobuf-java-.*\.jar</filePath>
+        <cpe>cpe:2.3:a:google:protobuf:</cpe>
+        <cpe>cpe:2.3:a:protobuf:protobuf:</cpe>
     </suppress>
 </suppressions>
