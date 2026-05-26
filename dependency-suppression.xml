@@ -52,15 +52,31 @@
     </suppress>
     <suppress>
         <notes><![CDATA[
-        protobuf-java-4.34.1.jar: CVE-2026-0994 is a false positive. The vulnerability is in the Python
-        protobuf library's json_format.ParseDict() function — specifically a recursion-depth counter bug
-        in Python's json_format.py. That code does not exist in the Java implementation. The NVD CPE
-        cpe:/a:google:protobuf is language-agnostic and incorrectly matches the Java artifact.
-        The fix versions cited (5.29.6, 6.33.5) are Python package versions; there is no corresponding
-        Java fix because there is no vulnerability in the Java library.
-        Added: 2026-04-20
+        protobuf-java (all versions): CVE-2026-0994 is a Python-only vulnerability
+        in the protobuf library's json_format.ParseDict() function — a recursion-
+        depth counter bug in Python's json_format.py. The Java implementation does
+        not contain that code. NVD assigns the cross-language CPE
+        cpe:/a:google:protobuf to this CVE, which Dependency-Check then incorrectly
+        matches against the Java protobuf-java artifact. Fix versions cited in the
+        CVE (5.29.6, 6.33.5) are Python package versions.
+
+        This rule matches any protobuf-java JAR by filename (so it survives version
+        bumps) and suppresses only CVE-2026-0994. Future Python-only or C++-only
+        CVEs that NVD assigns to cpe:/a:google:protobuf on the Java artifact will
+        need their own entries — we tried broader matchers (<packageUrl> and
+        version-agnostic <cpe> in both CPE 2.2 and 2.3 forms) in earlier commits on
+        the IGDD-2928 branch and verified in publish runs 26310238352 and
+        26316297788 that neither shape produces a match in this project's
+        Dependency-Check configuration. Root cause: the workflows pass
+        --disableCentral, so 44 of 134 scanned JARs (protobuf-java among them) have
+        no PURL identifier, and the <cpe> matcher's containment semantics did not
+        connect our value (in either CPE form) to the vulnerability identifiers
+        Dependency-Check emits. The narrower filePath + CVE pattern is documented
+        in the Dependency-Check suppression guide and is the form known to work
+        here.
+        Added: 2026-05-22
         ]]></notes>
-        <sha1>e3b07cd3be66ec918b9fa4db9863c86d5eeea891</sha1>
+        <filePath regex="true">.*protobuf-java-.*\.jar</filePath>
         <cve>CVE-2026-0994</cve>
     </suppress>
 </suppressions>
