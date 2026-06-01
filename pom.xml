@@ -23,7 +23,7 @@
         <tomcat.version>10.1.55</tomcat.version>
         <!-- Jackson JSON processing -->
         <jackson.version>2.21.4</jackson.version>
-        <jackson-annotations.version>2.21</jackson-annotations.version>
+        <jackson-annotations.version>2.22</jackson-annotations.version>
         <!-- STAX Processing (used in HAPI) -->
         <stax2.version>4.3.0</stax2.version>
         <saxon.version>12.9</saxon.version>
@@ -52,7 +52,7 @@
         <!-- HAPI -->
         <hapi-v2.version>2.6.0</hapi-v2.version>
         <hapi-fhir.version>8.10.0</hapi-fhir.version>
-        <hl7-fhir.version>6.9.8</hl7-fhir.version>
+        <hl7-fhir.version>6.9.9</hl7-fhir.version>
         <opencsv.version>5.12.0</opencsv.version>
         <thymeleaf.version>3.1.5.RELEASE</thymeleaf.version>
         <!-- ulidj -->
@@ -62,10 +62,10 @@
         <javax-activation.version>1.2.0</javax-activation.version>
         <hibernate-validator.version>8.0.3.Final</hibernate-validator.version>
         <!-- JWT Support -->
-        <nimbus-jose-jwt.version>10.9</nimbus-jose-jwt.version>
+        <nimbus-jose-jwt.version>10.9.1</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.45.0</aws-sdk.version>
+        <aws-sdk.version>2.45.1</aws-sdk.version>
         <camel.version>4.18.2</camel.version>
         <lombok.version>1.18.46</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
