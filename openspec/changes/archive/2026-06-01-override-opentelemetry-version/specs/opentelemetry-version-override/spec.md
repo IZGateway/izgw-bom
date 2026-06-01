@@ -40,4 +40,3 @@ The validation module (`validation/pom.xml`) SHALL declare a dependency on `io.o
 - **WHEN** CI runs `mvn -B clean package -f validation/pom.xml`
 - **THEN** `io.opentelemetry:opentelemetry-api:1.62.0` resolves successfully from the configured repositories
 - **AND** the OWASP Dependency-Check scan includes the resolved OpenTelemetry JAR
-</content>

@@ -26,4 +26,3 @@ The override target is **1.62.0** (latest stable). A CVE was reported against 1.
 - **All consumers** (e.g. `v2tofhir`, `xform`) inherit OTel 1.62.0 once the updated `1.9.0-SNAPSHOT` is installed/published; no consumer pom changes required.
 - **Dependencies**: `io.opentelemetry:*` bumped 1.49.0 → 1.62.0 (above HAPI's requested 1.60.1; semver-compatible within 1.x; low risk). Note: the separate `io.opentelemetry.instrumentation:*` group (e.g. `opentelemetry-instrumentation-annotations`) is **not** governed by `opentelemetry-bom` and is unaffected by this change.
 - **Release/automation**: consumers pulling from GitHub Packages (vs. a local `mvn install`) need a published BOM snapshot/release; OTel is not property-backed in the automation's per-property sense but the import is governed by `${opentelemetry.version}`.
-</content>

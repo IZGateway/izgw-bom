@@ -58,4 +58,3 @@ Add `io.opentelemetry:opentelemetry-api` (the core artifact) to `validation/pom.
 ## Open Questions
 
 - Should the `izgw-bom` version be bumped / a release cut so consumers can pull the override from GitHub Packages rather than relying on a local install? Deferred to the team's release/automation process.
-</content>

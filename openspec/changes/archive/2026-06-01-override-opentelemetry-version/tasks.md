@@ -18,4 +18,3 @@
 
 - [x] 4.1 In `v2tofhir` (or another consumer), run `mvn dependency:tree -Dincludes=io.opentelemetry`.
 - [x] 4.2 Confirm `opentelemetry-api` and `opentelemetry-context` resolve to `1.62.0:compile` with **no** "version managed" downgrade note.
-</content>
