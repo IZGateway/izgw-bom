@@ -22,7 +22,7 @@
         <swagger-ui.version>5.32.6</swagger-ui.version>
         <tomcat.version>10.1.55</tomcat.version>
         <!-- OpenTelemetry — overrides the 1.49.0 pinned by spring-boot-dependencies (see import below) -->
-        <opentelemetry.version>1.60.1</opentelemetry.version>
+        <opentelemetry.version>1.62.0</opentelemetry.version>
         <!-- Jackson JSON processing -->
         <jackson.version>2.21.4</jackson.version>
         <jackson-annotations.version>2.22</jackson-annotations.version>

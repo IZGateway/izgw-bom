@@ -1,20 +1,20 @@
 ## ADDED Requirements
 
-### Requirement: OpenTelemetry version is centrally overridden to 1.60.1
+### Requirement: OpenTelemetry version is centrally overridden to 1.62.0
 
-The BOM SHALL manage all `io.opentelemetry:*` modules at version **1.60.1**, overriding the version pinned transitively by the imported `spring-boot-dependencies` BOM. The version MUST be expressed through a `${opentelemetry.version}` property declared in the `<properties>` block, consistent with the BOM's property-backed-version invariant.
+The BOM SHALL manage all `io.opentelemetry:*` modules at version **1.62.0**, overriding both the version pinned transitively by the imported `spring-boot-dependencies` BOM (1.49.0) and the version requested by `hapi-fhir-base` (1.60.1). The version MUST be expressed through a `${opentelemetry.version}` property declared in the `<properties>` block, consistent with the BOM's property-backed-version invariant.
 
 #### Scenario: Consumer resolves the overridden OpenTelemetry version
 
 - **WHEN** a consumer of `izgw-bom` runs `mvn dependency:tree -Dincludes=io.opentelemetry`
-- **THEN** `io.opentelemetry:opentelemetry-api` and `io.opentelemetry:opentelemetry-context` resolve to `1.60.1`
-- **AND** no "version managed from 1.60.1" downgrade note is present
+- **THEN** `io.opentelemetry:opentelemetry-api` and `io.opentelemetry:opentelemetry-context` resolve to `1.62.0`
+- **AND** no "version managed" downgrade note is present
 
 #### Scenario: Version is property-backed
 
 - **WHEN** the `opentelemetry-bom` import is read in `pom.xml`
 - **THEN** its `<version>` is the `${opentelemetry.version}` property reference, not a hardcoded literal
-- **AND** `<opentelemetry.version>1.60.1</opentelemetry.version>` is declared in the `<properties>` block
+- **AND** `<opentelemetry.version>1.62.0</opentelemetry.version>` is declared in the `<properties>` block
 
 ### Requirement: The opentelemetry-bom import precedes the spring-boot-dependencies import
 
@@ -38,6 +38,6 @@ The validation module (`validation/pom.xml`) SHALL declare a dependency on `io.o
 #### Scenario: CI resolves the OpenTelemetry artifact
 
 - **WHEN** CI runs `mvn -B clean package -f validation/pom.xml`
-- **THEN** `io.opentelemetry:opentelemetry-api:1.60.1` resolves successfully from the configured repositories
+- **THEN** `io.opentelemetry:opentelemetry-api:1.62.0` resolves successfully from the configured repositories
 - **AND** the OWASP Dependency-Check scan includes the resolved OpenTelemetry JAR
 </content>

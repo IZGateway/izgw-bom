@@ -11,12 +11,12 @@ Constraints:
 ## Goals / Non-Goals
 
 **Goals:**
-- Make all `io.opentelemetry:*` modules resolve to **1.60.1** in every consumer of `izgw-bom`, with no per-consumer pom changes.
+- Make all `io.opentelemetry:*` modules resolve to **1.62.0** (latest stable; clears the CVE AWS ECR reported against 1.60.1) in every consumer of `izgw-bom`, with no per-consumer pom changes.
 - Keep the override `${property}`-backed and CI-verified (resolution + CVE scan) like every other managed version.
 - Keep all OTel modules version-aligned automatically (avoid drift between `opentelemetry-api`, `-context`, etc.).
 
 **Non-Goals:**
-- Upgrading OpenTelemetry beyond 1.60.1 or chasing the latest 1.6x.x release.
+- Overriding the separate `io.opentelemetry.instrumentation:*` group (e.g. `opentelemetry-instrumentation-annotations`), which is not governed by `opentelemetry-bom`.
 - Changing `v2tofhir` or any other consumer pom.
 - Adding OTel instrumentation, agents, or runtime configuration — this is purely dependency-version management.
 - Bumping the `izgw-bom` artifact version or triggering a release (handled by the team's release process separately).
@@ -25,26 +25,26 @@ Constraints:
 
 ### Decision: Import `opentelemetry-bom` ahead of `spring-boot-dependencies`
 
-Add `<opentelemetry.version>1.60.1</opentelemetry.version>` to `<properties>` and import `io.opentelemetry:opentelemetry-bom:${opentelemetry.version}` (`type=pom`, `scope=import`) in `<dependencyManagement>` **immediately before** the `spring-boot-dependencies` import.
+Add `<opentelemetry.version>1.62.0</opentelemetry.version>` to `<properties>` and import `io.opentelemetry:opentelemetry-bom:${opentelemetry.version}` (`type=pom`, `scope=import`) in `<dependencyManagement>` **immediately before** the `spring-boot-dependencies` import.
 
-**Rationale:** When two imported BOMs manage the same artifacts, Maven resolves the version from the **first-declared** import ("nearest/first wins" for imports in declaration order). Declaring `opentelemetry-bom` first makes 1.60.1 authoritative; Spring's later import of 1.49.0 is then a no-op for OTel. This keeps all OTel modules aligned through a single BOM and is future-proof as new OTel modules appear.
+**Rationale:** When two imported BOMs manage the same artifacts, Maven resolves the version from the **first-declared** import ("nearest/first wins" for imports in declaration order). Declaring `opentelemetry-bom` first makes 1.62.0 authoritative; Spring's later import of 1.49.0 is then a no-op for OTel. This keeps all OTel modules aligned through a single BOM and is future-proof as new OTel modules appear.
 
 **Alternatives considered:**
 - **Bare `<opentelemetry.version>` property override** — Rejected. Does not work without `spring-boot-starter-parent`; the property is never consulted by the already-imported `spring-boot-dependencies`.
 - **Explicit per-artifact `dependencyManagement` entries** (the log4j2 pattern in this pom) — Works and is order-independent, but requires enumerating and maintaining every OTel artifact the tree pulls in. Rejected as more brittle/verbose than a single BOM import; the BOM import keeps modules aligned automatically.
 
-### Decision: Target version 1.60.1
+### Decision: Target version 1.62.0
 
-Chosen because it is exactly what `hapi-fhir-base:8.10.0` was built against — lowest compatibility risk and resolves the "managed down" warning cleanly. `opentelemetry-api` follows semver and is API-stable across 1.x, so a later bump (e.g. for a CVE fix) would be low-risk, but is out of scope here.
+Initially targeted 1.60.1 (exactly what `hapi-fhir-base:8.10.0` was built against). A CVE was subsequently reported against 1.60.1 and AWS ECR image scanning named **1.62.0** (latest stable) as the remediation, so the target was raised to 1.62.0. `opentelemetry-api` follows semver and is API-stable across 1.x, so the bump above HAPI's requested 1.60.1 is low-risk; the BOM import forces every OTel module up together regardless of what HAPI requests.
 
 ### Decision: Add a validation entry
 
-Add `io.opentelemetry:opentelemetry-api` (the core artifact) to `validation/pom.xml` with an `<!-- opentelemetry.version -->` comment and no explicit version (inherited from the BOM). This upholds the repo convention that every managed version property has a corresponding validation dependency, so the new 1.60.1 version is resolution-checked and OWASP-scanned in CI.
+Add `io.opentelemetry:opentelemetry-api` (the core artifact) to `validation/pom.xml` with an `<!-- opentelemetry.version -->` comment and no explicit version (inherited from the BOM). This upholds the repo convention that every managed version property has a corresponding validation dependency, so the new 1.62.0 version is resolution-checked and OWASP-scanned in CI.
 
 ## Risks / Trade-offs
 
 - **Ordering regression** → A future edit that moves the `opentelemetry-bom` import after `spring-boot-dependencies` (or removes it) silently reverts OTel to 1.49.0. Mitigation: an inline comment on the import explaining the ordering requirement, and a spec requirement asserting the order; verification step (`dependency:tree`) catches it.
-- **Spring/OTel API skew** → Spring Boot 3.5.14 was tested against OTel 1.49.0; forcing 1.60.1 could in theory surface an incompatibility in Spring's OTel-touching autoconfig. Mitigation: 1.60.1 is what HAPI already requires in the same tree, OTel 1.x is API-stable, and CI resolution + the consumer `dependency:tree` check validate the resolved graph.
+- **Spring/OTel API skew** → Spring Boot 3.5.14 was tested against OTel 1.49.0; forcing 1.62.0 could in theory surface an incompatibility in Spring's OTel-touching autoconfig. Mitigation: HAPI already requires 1.60.1 in the same tree and 1.62.0 is only two minors above it, OTel 1.x is API-stable, and CI resolution + the consumer `dependency:tree` check validate the resolved graph.
 - **Consumers on GitHub Packages vs. local install** → Local `mvn install` only updates the consumer's `~/.m2`; consumers pulling the BOM from GitHub Packages need a published `1.9.0-SNAPSHOT` (or release) to see the change. Mitigation: note in the proposal/tasks; defer the version-bump/release decision to the team's process.
 
 ## Migration Plan
@@ -52,7 +52,7 @@ Add `io.opentelemetry:opentelemetry-api` (the core artifact) to `validation/pom.
 1. Edit `izgw-bom/pom.xml` (property + ordered BOM import) and `validation/pom.xml` (validation dependency).
 2. `mvn -B validate` then `mvn -B install -N` and `mvn -B clean package -f validation/pom.xml` to confirm resolution.
 3. `mvn install` to publish `1.9.0-SNAPSHOT` to local `~/.m2`.
-4. In a consumer (`v2tofhir`): `mvn dependency:tree -Dincludes=io.opentelemetry` → expect `1.60.1:compile` with no "version managed from 1.60.1" note.
+4. In a consumer (`v2tofhir`, `xform`): `mvn dependency:tree -Dincludes=io.opentelemetry` → expect `1.62.0:compile` with no "version managed" downgrade note.
 5. Rollback: revert the two pom edits; no state migration is involved.
 
 ## Open Questions
