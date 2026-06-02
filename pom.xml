@@ -28,13 +28,13 @@
         <stax2.version>4.3.0</stax2.version>
         <saxon.version>12.9</saxon.version>
         <!-- Netty -->
-        <netty.version>4.2.14.Final</netty.version>
+        <netty.version>4.2.15.Final</netty.version>
         <!-- Protobuf -->
         <protobuf-java.version>4.35.0</protobuf-java.version>
         <!-- Logging -->
         <log4j2.version>2.26.0</log4j2.version>
         <slf4j.version>2.0.18</slf4j.version>
-        <logback.version>1.5.33</logback.version>
+        <logback.version>1.5.34</logback.version>
         <!-- Testing -->
         <junit.version>5.14.4</junit.version>
         <mockito.version>5.23.0</mockito.version>
@@ -65,7 +65,7 @@
         <nimbus-jose-jwt.version>10.9.1</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.45.1</aws-sdk.version>
+        <aws-sdk.version>2.46.0</aws-sdk.version>
         <camel.version>4.18.2</camel.version>
         <lombok.version>1.18.46</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
