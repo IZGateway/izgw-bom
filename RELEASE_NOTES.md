@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2026-06-03
+
+### Changes
+- IGDD-2977 OpenTelemetry override ([#86](https://github.com/IZGateway/izgw-bom/pull/86))
+- chore(deps): automated dependency updates 2026-06-03 ([#88](https://github.com/IZGateway/izgw-bom/pull/88))
+- chore(deps): automated dependency updates 2026-06-02 ([#87](https://github.com/IZGateway/izgw-bom/pull/87))
+- chore(deps): automated dependency updates 2026-06-01 ([#85](https://github.com/IZGateway/izgw-bom/pull/85))
+- chore(deps): automated dependency updates 2026-05-29 ([#84](https://github.com/IZGateway/izgw-bom/pull/84))
+- ci: upgrade GitHub Actions to Node.js 24 and add Dependabot config ([#81](https://github.com/IZGateway/izgw-bom/pull/81))
+- chore(deps): automated dependency updates 2026-05-27 ([#82](https://github.com/IZGateway/izgw-bom/pull/82))
+- chore: Archive OpenSpec fix-nightly-cve-scan-protobuf-and-oss-index change ([#80](https://github.com/IZGateway/izgw-bom/pull/80))
+- chore(deps): automated dependency updates 2026-05-26 ([#79](https://github.com/IZGateway/izgw-bom/pull/79))
+- fix(ci): version-agnostic protobuf suppression + disable OSS Index in nightly (IGDD-2928) ([#78](https://github.com/IZGateway/izgw-bom/pull/78))
+- fix(ci): temp disable OSS Index while Sonatype free credits are exhausted ([#77](https://github.com/IZGateway/izgw-bom/pull/77))
+- chore(deps): automated dependency updates 2026-05-19 ([#75](https://github.com/IZGateway/izgw-bom/pull/75))
+- chore(deps): automated dependency updates 2026-05-18 ([#74](https://github.com/IZGateway/izgw-bom/pull/74))
+- chore(deps): automated dependency updates 2026-05-15 ([#73](https://github.com/IZGateway/izgw-bom/pull/73))
+- chore(deps): automated dependency updates 2026-05-14 ([#72](https://github.com/IZGateway/izgw-bom/pull/72))
+- chore(deps): automated dependency updates 2026-05-12 ([#70](https://github.com/IZGateway/izgw-bom/pull/70))
+- chore: Archive OpenSpec change for release automation fix ([#69](https://github.com/IZGateway/izgw-bom/pull/69))
+
 ## [1.8.0] - 2026-05-08
 
 ### Changes
