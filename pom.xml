@@ -7,7 +7,7 @@
 
     <groupId>gov.cdc.izgw</groupId>
     <artifactId>izgw-bom</artifactId>
-    <version>1.8.0</version>
+    <version>1.9.0</version>
     <packaging>pom</packaging>
 
     <name>IZ Gateway Bill of Materials</name>
@@ -19,22 +19,24 @@
         <spring-framework.version>6.2.18</spring-framework.version>
         <spring-security.version>6.5.10</spring-security.version>
         <springdoc.version>2.8.17</springdoc.version>
-        <swagger-ui.version>5.32.5</swagger-ui.version>
-        <tomcat.version>10.1.54</tomcat.version>
+        <swagger-ui.version>5.32.6</swagger-ui.version>
+        <tomcat.version>10.1.55</tomcat.version>
+        <!-- OpenTelemetry — overrides the 1.49.0 pinned by spring-boot-dependencies (see import below) -->
+        <opentelemetry.version>1.62.0</opentelemetry.version>
         <!-- Jackson JSON processing -->
-        <jackson.version>2.21.3</jackson.version>
-        <jackson-annotations.version>2.21</jackson-annotations.version>
+        <jackson.version>2.21.4</jackson.version>
+        <jackson-annotations.version>2.22</jackson-annotations.version>
         <!-- STAX Processing (used in HAPI) -->
         <stax2.version>4.3.0</stax2.version>
         <saxon.version>12.9</saxon.version>
         <!-- Netty -->
-        <netty.version>4.2.13.Final</netty.version>
+        <netty.version>4.2.15.Final</netty.version>
         <!-- Protobuf -->
-        <protobuf-java.version>4.34.1</protobuf-java.version>
+        <protobuf-java.version>4.35.0</protobuf-java.version>
         <!-- Logging -->
         <log4j2.version>2.26.0</log4j2.version>
-        <slf4j.version>2.0.17</slf4j.version>
-        <logback.version>1.5.32</logback.version>
+        <slf4j.version>2.0.18</slf4j.version>
+        <logback.version>1.5.34</logback.version>
         <!-- Testing -->
         <junit.version>5.14.4</junit.version>
         <mockito.version>5.23.0</mockito.version>
@@ -51,8 +53,8 @@
         <commons-math3.version>3.6.1</commons-math3.version>
         <!-- HAPI -->
         <hapi-v2.version>2.6.0</hapi-v2.version>
-        <hapi-fhir.version>8.8.1</hapi-fhir.version>
-        <hl7-fhir.version>6.9.7</hl7-fhir.version>
+        <hapi-fhir.version>8.10.0</hapi-fhir.version>
+        <hl7-fhir.version>6.9.9</hl7-fhir.version>
         <opencsv.version>5.12.0</opencsv.version>
         <thymeleaf.version>3.1.5.RELEASE</thymeleaf.version>
         <!-- ulidj -->
@@ -62,10 +64,10 @@
         <javax-activation.version>1.2.0</javax-activation.version>
         <hibernate-validator.version>8.0.3.Final</hibernate-validator.version>
         <!-- JWT Support -->
-        <nimbus-jose-jwt.version>10.9</nimbus-jose-jwt.version>
+        <nimbus-jose-jwt.version>10.9.1</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.44.4</aws-sdk.version>
+        <aws-sdk.version>2.46.1</aws-sdk.version>
         <camel.version>4.18.2</camel.version>
         <lombok.version>1.18.46</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
@@ -159,6 +161,21 @@
                 <groupId>org.webjars</groupId>
                 <artifactId>swagger-ui</artifactId>
                 <version>${swagger-ui.version}</version>
+            </dependency>
+
+            <!-- OpenTelemetry — override the opentelemetry-bom that spring-boot-dependencies pins (1.49.0).
+                 ORDER IS LOAD-BEARING: this import MUST precede the spring-boot-dependencies import below.
+                 For two imported BOMs managing the same artifacts, the first-declared import wins, so
+                 declaring this first makes ${opentelemetry.version} authoritative. If moved after Spring's
+                 import (or removed), OTel silently reverts to 1.49.0. A bare property override does not work
+                 here because this BOM does not extend spring-boot-starter-parent (same gotcha as log4j2 below).
+                 hapi-fhir 8.10.0 itself requests 1.60.1; Spring was forcing it back down. -->
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>${opentelemetry.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <!-- Spring Boot and Spring Framework stuff -->

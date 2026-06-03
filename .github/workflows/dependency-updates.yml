@@ -15,10 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: "21"
           distribution: "temurin"
@@ -26,7 +26,7 @@ jobs:
           server-id: github
 
       - name: Set up Maven 3.9.14
-        uses: stCarolas/setup-maven@v5
+        uses: stCarolas/setup-maven@v5.1
         with:
           maven-version: 3.9.14
 
@@ -126,7 +126,7 @@ jobs:
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Cache Dependency-Check NVD data (pre-update)
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/dependency-check-data
           key: dependency-check-nvd-${{ runner.os }}-${{ steps.date-pre.outputs.date }}
@@ -145,8 +145,7 @@ jobs:
           out: "dependency-check-report-pre"
           args: >
             --suppression /github/workspace/dependency-suppression.xml
-            --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
-            --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
+            --disableOssIndex
             --failOnCVSS 7
             --nvdApiKey ${{ secrets.NVDAPIKEY }}
             --disableNuspec
@@ -158,7 +157,7 @@ jobs:
 
       - name: Upload pre-update CVE report artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dependency-check-report-pre-update
           path: dependency-check-report-pre/
@@ -373,7 +372,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cache Dependency-Check NVD data (post-update)
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/dependency-check-data
           key: dependency-check-nvd-${{ runner.os }}-${{ steps.date-pre.outputs.date }}
@@ -392,8 +391,7 @@ jobs:
           out: "dependency-check-report-post"
           args: >
             --suppression /github/workspace/dependency-suppression.xml
-            --ossIndexUsername ${{ secrets.OSS_INDEX_USERNAME }}
-            --ossIndexPassword ${{ secrets.OSS_INDEX_PASSWORD }}
+            --disableOssIndex
             --failOnCVSS 7
             --nvdApiKey ${{ secrets.NVDAPIKEY }}
             --disableNuspec
@@ -405,7 +403,7 @@ jobs:
 
       - name: Upload post-update CVE report artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dependency-check-report-post-update
           path: dependency-check-report-post/
@@ -447,7 +445,7 @@ jobs:
 
       - name: Upload debug artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: debug-logs
           if-no-files-found: ignore
@@ -510,7 +508,7 @@ jobs:
 
       - name: Send email notification
         if: env.HAS_CHANGES == 'true' && env.PR_URL != ''
-        uses: dawidd6/action-send-mail@v3
+        uses: dawidd6/action-send-mail@v17
         with:
           server_address: email-smtp.us-east-1.amazonaws.com
           server_port: 465
