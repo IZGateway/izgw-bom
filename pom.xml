@@ -24,7 +24,7 @@
         <!-- OpenTelemetry — overrides the 1.49.0 pinned by spring-boot-dependencies (see import below) -->
         <opentelemetry.version>1.62.0</opentelemetry.version>
         <!-- Jackson JSON processing -->
-        <jackson.version>2.21.4</jackson.version>
+        <jackson.version>2.22.0</jackson.version>
         <jackson-annotations.version>2.22</jackson-annotations.version>
         <!-- STAX Processing (used in HAPI) -->
         <stax2.version>4.3.0</stax2.version>
@@ -67,7 +67,7 @@
         <nimbus-jose-jwt.version>10.9.1</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.46.1</aws-sdk.version>
+        <aws-sdk.version>2.46.3</aws-sdk.version>
         <camel.version>4.18.2</camel.version>
         <lombok.version>1.18.46</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
