@@ -52,6 +52,24 @@
     </suppress>
     <suppress>
         <notes><![CDATA[
+        spring-security-core-6.5.11.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
+        which is not in this project.
+        Added: 2026-06-11
+        ]]></notes>
+        <sha1>d57309ff65d122a2fa45a3a8f47b01e9183cb6e6</sha1>
+        <cve>CVE-2018-1258</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        spring-security-crypto-6.5.11.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
+        which is not in this project.
+        Added: 2026-06-11
+    ]]></notes>
+        <sha1>2cbc07fa7650ef2f49bcc5ac35e7666c79614f55</sha1>
+        <cve>CVE-2018-1258</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
         protobuf-java (all versions): CVE-2026-0994 is a Python-only vulnerability
         in the protobuf library's json_format.ParseDict() function — a recursion-
         depth counter bug in Python's json_format.py. The Java implementation does

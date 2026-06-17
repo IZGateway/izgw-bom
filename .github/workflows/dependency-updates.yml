@@ -505,36 +505,3 @@ jobs:
           echo "PR created: $PR_URL"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Send email notification
-        if: env.HAS_CHANGES == 'true' && env.PR_URL != ''
-        uses: dawidd6/action-send-mail@v17
-        with:
-          server_address: email-smtp.us-east-1.amazonaws.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "[izgw-bom] Automated dependency updates PR opened — $(date +'%Y-%m-%d')"
-          to: ${{ secrets.MAIL_RECIPIENTS }}, kboone@ainq.com
-          from: "IZ Gateway CI <noreply@izgateway.org>"
-          body: |
-            An automated dependency update PR has been opened for izgw-bom.
-
-            PR: ${{ env.PR_URL }}
-
-            ${{ env.CHANGES_TABLE }}
-
-            Transitive dependencies auto-fixed:
-            ${{ env.AUTO_FIXED_TRANSITIVES }}
-
-            Pre-update CVE scan:  ${{ env.CVE_SUMMARY_PRE }}
-            Post-update CVE scan: ${{ env.CVE_SUMMARY_POST }}
-
-            Transitives requiring manual action:
-            ${{ env.MANUAL_TRANSITIVES }}
-
-            Excluded libraries (not updated automatically):
-            ${{ env.EXCLUDED_REPORT }}
-
-            Please review and merge if all checks pass.
