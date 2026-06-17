@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-06-17
+
+### Changes
+- chore(deps): automated dependency updates 2026-06-17 ([#101](https://github.com/IZGateway/izgw-bom/pull/101))
+- chore(deps): automated dependency updates 2026-06-16 ([#100](https://github.com/IZGateway/izgw-bom/pull/100))
+- IGDD-3034 - Add suppression for false positive ([#96](https://github.com/IZGateway/izgw-bom/pull/96))
+- chore(deps): automated dependency updates 2026-06-09 ([#93](https://github.com/IZGateway/izgw-bom/pull/93))
+- chore: Remove email sending from nightly update ([#92](https://github.com/IZGateway/izgw-bom/pull/92))
+- chore(deps): automated dependency updates 2026-06-08 ([#91](https://github.com/IZGateway/izgw-bom/pull/91))
+- chore(deps): automated dependency updates 2026-06-05 ([#90](https://github.com/IZGateway/izgw-bom/pull/90))
+- chore(deps): automated dependency updates 2026-06-04 ([#89](https://github.com/IZGateway/izgw-bom/pull/89))
+
 ## [1.9.0] - 2026-06-03
 
 ### Changes
