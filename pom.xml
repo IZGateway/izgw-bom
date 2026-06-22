@@ -62,7 +62,7 @@
         <!-- Validation -->
         <jakarta-validation.version>3.1.1</jakarta-validation.version>
         <javax-activation.version>1.2.0</javax-activation.version>
-        <hibernate-validator.version>8.0.3.Final</hibernate-validator.version>
+        <hibernate-validator.version>8.0.4.Final</hibernate-validator.version>
         <!-- JWT Support -->
         <nimbus-jose-jwt.version>10.9.1</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
