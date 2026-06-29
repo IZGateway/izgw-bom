@@ -126,7 +126,7 @@ jobs:
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Cache Dependency-Check NVD data (pre-update)
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/dependency-check-data
           key: dependency-check-nvd-${{ runner.os }}-${{ steps.date-pre.outputs.date }}
@@ -372,7 +372,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cache Dependency-Check NVD data (post-update)
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/dependency-check-data
           key: dependency-check-nvd-${{ runner.os }}-${{ steps.date-pre.outputs.date }}
