@@ -44,8 +44,8 @@
         <!-- HTTP Client -->
         <httpclient.version>5.6.2</httpclient.version>
         <!-- HttpCore — overrides the 5.3.6 pinned by spring-boot-dependencies (see dependencyManagement below).
-             5.4.3 is the version httpclient5 5.6.2 is built against and the first stable release fixing
-             CVE-2026-54399 (affects httpcore5 <= 5.4.2). -->
+             5.4.3 is the version httpclient5 5.6.2 is built against and the first release clearing an NVD finding
+             (affects httpcore5 <= 5.4.2). -->
         <httpcore.version>5.4.3</httpcore.version>
         <!-- Apache Commons -->
         <commons-lang3.version>3.20.0</commons-lang3.version>
@@ -386,7 +386,7 @@
             <!-- HttpCore — explicit entries required; spring-boot-dependencies pins httpcore5 to 5.3.6
                  independently of httpclient5, and because this BOM does not extend spring-boot-starter-parent
                  a bare property override never fires. Without these entries httpcore5 falls back to the
-                 vulnerable 5.3.6 (CVE-2026-54399) even though httpclient5 5.6.2 expects 5.4.3. -->
+                 vulnerable 5.3.6 even though httpclient5 5.6.2 expects 5.4.3. -->
             <dependency>
                 <groupId>org.apache.httpcomponents.core5</groupId>
                 <artifactId>httpcore5</artifactId>
