@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] - 2026-07-07
+
+### Changes
+- chore(deps): automated dependency updates 2026-07-07 ([#118](https://github.com/IZGateway/izgw-bom/pull/118))
+- Pin httpcore5 to 5.4.3 ([#117](https://github.com/IZGateway/izgw-bom/pull/117))
+- chore(deps): automated dependency updates 2026-07-06 ([#116](https://github.com/IZGateway/izgw-bom/pull/116))
+- chore(deps): automated dependency updates 2026-07-01 ([#113](https://github.com/IZGateway/izgw-bom/pull/113))
+- chore(deps): automated dependency updates 2026-06-30 ([#112](https://github.com/IZGateway/izgw-bom/pull/112))
+- chore(deps): automated dependency updates 2026-06-29 ([#111](https://github.com/IZGateway/izgw-bom/pull/111))
+- chore(deps): bump actions/cache from 5 to 6 ([#110](https://github.com/IZGateway/izgw-bom/pull/110))
+- chore(deps): automated dependency updates 2026-06-26 ([#109](https://github.com/IZGateway/izgw-bom/pull/109))
+- chore(deps): automated dependency updates 2026-06-24 ([#108](https://github.com/IZGateway/izgw-bom/pull/108))
+- chore(deps): automated dependency updates 2026-06-23 ([#107](https://github.com/IZGateway/izgw-bom/pull/107))
+- chore(deps): automated dependency updates 2026-06-22 ([#106](https://github.com/IZGateway/izgw-bom/pull/106))
+- chore(deps): bump actions/checkout from 6 to 7 ([#104](https://github.com/IZGateway/izgw-bom/pull/104))
+- chore(deps): automated dependency updates 2026-06-22 ([#105](https://github.com/IZGateway/izgw-bom/pull/105))
+
 ## [1.10.0] - 2026-06-17
 
 ### Changes
