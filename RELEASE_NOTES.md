@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0] - 2026-07-10
+
+### Changes
+- chore: Bump camel version ([#120](https://github.com/IZGateway/izgw-bom/pull/120))
+- chore(deps): automated dependency updates 2026-07-08 ([#119](https://github.com/IZGateway/izgw-bom/pull/119))
+
 ## [1.11.0] - 2026-07-07
 
 ### Changes
