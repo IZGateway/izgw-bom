@@ -42,7 +42,7 @@
         <mockito.version>5.23.0</mockito.version>
         <testcontainers.version>1.21.4</testcontainers.version>
         <!-- HTTP Client -->
-        <httpclient.version>5.6.2</httpclient.version>
+        <httpclient.version>5.6.3</httpclient.version>
         <!-- HttpCore — overrides the 5.3.6 pinned by spring-boot-dependencies (see dependencyManagement below).
              5.4.3 is the version httpclient5 5.6.2 is built against and the first release clearing an NVD finding
              (affects httpcore5 <= 5.4.2). -->
@@ -71,7 +71,7 @@
         <nimbus-jose-jwt.version>10.9.1</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.49.6</aws-sdk.version>
+        <aws-sdk.version>2.50.1</aws-sdk.version>
         <camel.version>4.18.3</camel.version>
         <lombok.version>1.18.46</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
