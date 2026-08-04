@@ -97,39 +97,4 @@
         <filePath regex="true">.*protobuf-java-.*\.jar</filePath>
         <cve>CVE-2026-0994</cve>
     </suppress>
-    <suppress>
-        <notes><![CDATA[
-    file name: mysql-connector-j-9.7.0.jar
-    ]]></notes>
-        <sha1>4e6e3e8765e4a9d0609744b3e8fe75afe1b98cba</sha1>
-        <cpe>cpe:/a:mysql:mysql</cpe>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-    file name: mysql-connector-j-9.7.0.jar
-    ]]></notes>
-        <sha1>4e6e3e8765e4a9d0609744b3e8fe75afe1b98cba</sha1>
-        <cpe>cpe:/a:oracle:connector%2fj</cpe>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-    file name: mysql-connector-j-9.7.0.jar
-    ]]></notes>
-        <sha1>4e6e3e8765e4a9d0609744b3e8fe75afe1b98cba</sha1>
-        <cpe>cpe:/a:oracle:jdbc</cpe>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-    file name: mysql-connector-j-9.7.0.jar
-    ]]></notes>
-        <sha1>4e6e3e8765e4a9d0609744b3e8fe75afe1b98cba</sha1>
-        <cpe>cpe:/a:oracle:mysql_connector%2fj</cpe>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-    file name: mysql-connector-j-9.7.0.jar
-    ]]></notes>
-        <sha1>4e6e3e8765e4a9d0609744b3e8fe75afe1b98cba</sha1>
-        <cpe>cpe:/a:oracle:mysql_connectors</cpe>
-    </suppress>
 </suppressions>
