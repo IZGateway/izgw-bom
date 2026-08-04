@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.13.0] - 2026-08-04
+
+### Changes
+- Suppress MySQL ([#138](https://github.com/IZGateway/izgw-bom/pull/138))
+- chore(deps): automated dependency updates 2026-08-04 ([#137](https://github.com/IZGateway/izgw-bom/pull/137))
+- chore(deps): automated dependency updates 2026-08-03 ([#136](https://github.com/IZGateway/izgw-bom/pull/136))
+- chore(deps): automated dependency updates 2026-07-31 ([#135](https://github.com/IZGateway/izgw-bom/pull/135))
+- chore(deps): automated dependency updates 2026-07-30 ([#134](https://github.com/IZGateway/izgw-bom/pull/134))
+- chore(deps): automated dependency updates 2026-07-29 ([#133](https://github.com/IZGateway/izgw-bom/pull/133))
+- chore(deps): automated dependency updates 2026-07-28 ([#132](https://github.com/IZGateway/izgw-bom/pull/132))
+- chore(deps): automated dependency updates 2026-07-27 ([#131](https://github.com/IZGateway/izgw-bom/pull/131))
+- chore(deps): automated dependency updates 2026-07-23 ([#130](https://github.com/IZGateway/izgw-bom/pull/130))
+- chore(deps): automated dependency updates 2026-07-22 ([#129](https://github.com/IZGateway/izgw-bom/pull/129))
+- chore(deps): automated dependency updates 2026-07-21 ([#128](https://github.com/IZGateway/izgw-bom/pull/128))
+- chore(deps): automated dependency updates 2026-07-20 ([#127](https://github.com/IZGateway/izgw-bom/pull/127))
+- chore(deps): automated dependency updates 2026-07-17 ([#126](https://github.com/IZGateway/izgw-bom/pull/126))
+- chore(deps): automated dependency updates 2026-07-16 ([#125](https://github.com/IZGateway/izgw-bom/pull/125))
+- chore(deps): automated dependency updates 2026-07-15 ([#124](https://github.com/IZGateway/izgw-bom/pull/124))
+- chore(deps): automated dependency updates 2026-07-14 ([#123](https://github.com/IZGateway/izgw-bom/pull/123))
+- chore(deps): automated dependency updates 2026-07-13 ([#122](https://github.com/IZGateway/izgw-bom/pull/122))
+- chore(deps): automated dependency updates 2026-07-10 ([#121](https://github.com/IZGateway/izgw-bom/pull/121))
+
 ## [1.12.0] - 2026-07-10
 
 ### Changes
