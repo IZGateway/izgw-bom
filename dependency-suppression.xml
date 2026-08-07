@@ -145,4 +145,12 @@
         <sha1>bc0e4f83f9a841f68ebcc18186914f0a9bbacb1b</sha1>
         <cve>CVE-2026-66299</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+    file name: tomcat-embed-websocket-10.1.57.jar
+    See note on tomcat-embed-core 10.1.57
+    ]]></notes>
+        <sha1>cdf7daa908a6601377172e09385eb43425fa9660</sha1>
+        <cve>CVE-2026-66299</cve>
+    </suppress>
 </suppressions>
