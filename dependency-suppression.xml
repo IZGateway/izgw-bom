@@ -132,4 +132,17 @@
         <sha1>4e6e3e8765e4a9d0609744b3e8fe75afe1b98cba</sha1>
         <cpe>cpe:/a:oracle:mysql_connectors</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        This vulnerability is with the Websocket chat example inside Tomcat's examples webapp.
+        That only ships in the full Tomcat zip distribution. tomcat-embed-core which is what is
+        used by izgw-hub and izgw-transform do not deploy this at all. Dependency Checker is
+        flagging on version only. All 11.x of tomcat-embed-core - the latest has the issue as well
+        plus I don't think its compatible with the version of Spring Boot we are using in Hub
+        and Transform.
+    file name: tomcat-embed-core-10.1.57.jar
+    ]]></notes>
+        <sha1>bc0e4f83f9a841f68ebcc18186914f0a9bbacb1b</sha1>
+        <cve>CVE-2026-66299</cve>
+    </suppress>
 </suppressions>
