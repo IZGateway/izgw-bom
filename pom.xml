@@ -58,7 +58,7 @@
         <!-- HAPI -->
         <hapi-v2.version>2.6.0</hapi-v2.version>
         <hapi-fhir.version>8.10.1</hapi-fhir.version>
-        <hl7-fhir.version>6.10.0</hl7-fhir.version>
+        <hl7-fhir.version>6.10.1</hl7-fhir.version>
         <opencsv.version>5.12.0</opencsv.version>
         <thymeleaf.version>3.1.5.RELEASE</thymeleaf.version>
         <!-- ulidj -->
@@ -71,7 +71,7 @@
         <nimbus-jose-jwt.version>10.9.1</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.51.1</aws-sdk.version>
+        <aws-sdk.version>2.51.2</aws-sdk.version>
         <camel.version>4.18.3</camel.version>
         <lombok.version>1.18.46</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
