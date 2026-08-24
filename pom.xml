@@ -20,13 +20,16 @@
              only Tomcat 11.x implements (10.1.x is Servlet 6.0/Jakarta EE 10). Versions below are
              pinned to the exact combination spring-boot-dependencies:4.1.1 itself was tested
              against (verified directly against its published POM), not independently-latest
-             patches of each. -->
+             patches of each — EXCEPT tomcat.version, overridden up to 11.0.25 (one patch ahead of
+             Boot 4.1.1's own 11.0.24 pin): 11.0.24 has a disclosed CVSS 7.5 DoS vulnerability
+             (CVE-2026-66299, WebSocket chat example) that fails this repo's OWASP CVSS>=7 gate;
+             11.0.25 fixes it. Same override pattern already used for httpcore.version below. -->
         <spring-boot.version>4.1.1</spring-boot.version>
         <spring-framework.version>7.0.9</spring-framework.version>
         <spring-security.version>7.1.1</spring-security.version>
         <springdoc.version>3.1.0</springdoc.version>
         <swagger-ui.version>5.32.15</swagger-ui.version>
-        <tomcat.version>11.0.24</tomcat.version>
+        <tomcat.version>11.0.25</tomcat.version>
         <!-- OpenTelemetry — overrides the 1.49.0 pinned by spring-boot-dependencies (see import below) -->
         <opentelemetry.version>1.66.0</opentelemetry.version>
         <!-- Jackson JSON processing -->
