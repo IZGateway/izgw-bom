@@ -505,3 +505,11 @@ jobs:
           echo "PR created: $PR_URL"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Wait for PR checks, then merge if green
+        if: env.HAS_CHANGES == 'true'
+        run: |
+          gh pr checks "$PR_URL" --watch --interval 30
+          gh pr merge "$PR_URL" --squash --delete-branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
