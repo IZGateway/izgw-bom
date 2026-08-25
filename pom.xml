@@ -84,12 +84,14 @@
         <!-- IGDD-2353: Camel 4.18.x only supports Boot 3; Camel 4.19+ only supports Boot 4 (Boot 3
              support dropped entirely as of 4.19.0). No Camel version supports both, so this must
              move in lockstep with spring-boot.version above, never staged separately. Verified
-             directly against Camel's own parent/pom.xml at each release tag: 4.19.0 (first
-             Boot-4-compatible release) built against Boot 4.0.5; 4.20.0 (used here) is the
-             subsequent security-fix release, Boot 4 only. Newer 4.21.0/4.22.0 exist upstream but
-             weren't chosen — 4.20.0 is the version actually verified during this migration's
-             research (Jackson 2 internal dependency confirmed, Boot-4-only support confirmed). -->
-        <camel.version>4.20.0</camel.version>
+             directly against Camel's own parent/pom.xml at each release tag: 4.19.0/4.20.0/4.21.0
+             all Boot-4-only. 4.22.0 (used here) targets Boot 4.1.0 (compatible with our 4.1.1) and
+             still depends on Jackson 2 internally (jackson2-version property confirmed in its own
+             parent pom). Corrected up from 4.20.0 during Stage 4: dependency-check found 23 CVEs on
+             camel-core-engine-4.20.0.jar, several critical (up to 9.8) — e.g. CVE-2026-46455
+             affects 4.19.0 through 4.21.0. 4.22.0 is the latest available and was verified empirically
+             (OWASP check clean) rather than assumed from a fix-version announcement. -->
+        <camel.version>4.22.0</camel.version>
         <lombok.version>1.18.48</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
         <bc-fips.version>2.1.3</bc-fips.version>
