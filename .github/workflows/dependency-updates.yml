@@ -11,6 +11,17 @@ on:
 permissions:
   contents: read
 
+env:
+  # Pulls the vulnerability count out of the Dependency-Check HTML report. As of
+  # dependency-check 13.0.0 the report renders it as:
+  #   <li><i>Vulnerabilities Found</i>:&nbsp;0</li>
+  # The earlier pattern, 'vulnerabilities found: \K[0-9]+', matched nothing against this
+  # format, so the count silently read as empty. Used with grep -oiP, this tolerates a
+  # missing </i>, a space before the colon, and &nbsp; or plain whitespace after it.
+  # Do not match "Vulnerable Dependencies" — that is a different metric.
+  # "Vulnerabilities Found" already excludes the suppressed entries.
+  VULN_COUNT_PATTERN: 'Vulnerabilities Found(?:</i>)?\s*:(?:&nbsp;|\s)*\K[0-9]+'
+
 jobs:
   dependency-updates:
     runs-on: ubuntu-latest
@@ -189,8 +200,8 @@ jobs:
         run: |
           REPORT="dependency-check-report-pre/dependency-check-report.html"
           if [ -f "$REPORT" ]; then
-            VULN_COUNT=$(grep -oP 'vulnerabilities found: \K[0-9]+' "$REPORT" | head -1 || echo "see report artifact")
-            echo "CVE_SUMMARY_PRE=Pre-update scan: ${VULN_COUNT} vulnerabilities found. See the \`dependency-check-report-pre-update\` artifact." >> $GITHUB_ENV
+            VULN_COUNT=$(grep -oiP "$VULN_COUNT_PATTERN" "$REPORT" | head -1 || true)
+            echo "CVE_SUMMARY_PRE=Pre-update scan: ${VULN_COUNT:-an unreadable number of} vulnerabilities found. See the \`dependency-check-report-pre-update\` artifact." >> $GITHUB_ENV
           else
             echo "CVE_SUMMARY_PRE=Pre-update CVE report not found — see workflow logs." >> $GITHUB_ENV
           fi
@@ -451,7 +462,7 @@ jobs:
         run: |
           REPORT="dependency-check-report-post/dependency-check-report.html"
           if [ -f "$REPORT" ]; then
-            VULN_COUNT=$(grep -oP 'vulnerabilities found: \K[0-9]+' "$REPORT" | head -1 || true)
+            VULN_COUNT=$(grep -oiP "$VULN_COUNT_PATTERN" "$REPORT" | head -1 || true)
             if [ -n "$VULN_COUNT" ]; then
               echo "CVE_SUMMARY_POST=Post-update scan: ${VULN_COUNT} vulnerabilities found. See the \`dependency-check-report-post-update\` artifact." >> $GITHUB_ENV
               if [ "$VULN_COUNT" -gt 0 ]; then
