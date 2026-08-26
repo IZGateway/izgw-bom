@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.14.0] - 2026-08-26
+
+### Changes
+- chore(deps): automated dependency updates 2026-08-26 ([#158](https://github.com/IZGateway/izgw-bom/pull/158))
+- chore(deps): automated dependency updates 2026-08-24 ([#155](https://github.com/IZGateway/izgw-bom/pull/155))
+- chore(deps): automated dependency updates 2026-08-20 ([#153](https://github.com/IZGateway/izgw-bom/pull/153))
+- chore(deps): automated dependency updates 2026-08-19 ([#152](https://github.com/IZGateway/izgw-bom/pull/152))
+- chore(deps): automated dependency updates 2026-08-17 ([#150](https://github.com/IZGateway/izgw-bom/pull/150))
+- chore(deps): automated dependency updates 2026-08-14 ([#149](https://github.com/IZGateway/izgw-bom/pull/149))
+- chore(deps): automated dependency updates 2026-08-12 ([#147](https://github.com/IZGateway/izgw-bom/pull/147))
+- chore(deps): upgrade bc-fips to 2.1.3 (IGDD-3254) ([#141](https://github.com/IZGateway/izgw-bom/pull/141))
+- chore(deps): automated dependency updates 2026-08-11 ([#146](https://github.com/IZGateway/izgw-bom/pull/146))
+- chore(deps): automated dependency updates 2026-08-10 ([#145](https://github.com/IZGateway/izgw-bom/pull/145))
+- Tomcat 10.1.57 suppression rule ([#143](https://github.com/IZGateway/izgw-bom/pull/143))
+- chore(deps): automated dependency updates 2026-08-06 ([#140](https://github.com/IZGateway/izgw-bom/pull/140))
+
 ## [1.13.0] - 2026-08-04
 
 ### Changes
