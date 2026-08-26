@@ -6,16 +6,38 @@ on:
     - cron: "0 7 * * 1-5"
   workflow_dispatch:
 
+# Every write (branch push, PR create, PR merge) now uses the izg-dependency-bot App
+# token. GITHUB_TOKEN is left with read access only, for Maven dependency resolution.
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   dependency-updates:
     runs-on: ubuntu-latest
     steps:
+      # A GitHub App installation token is used instead of secrets.GITHUB_TOKEN for all
+      # git push / gh operations. Two reasons:
+      #   1. A pull request opened by github-actions[bot] lands in "action_required" and
+      #      waits for a human to click "Approve and run" (repo policy is
+      #      fork-pr-contributor-approval = first_time_contributors). An App-authored PR
+      #      is not subject to that gate.
+      #   2. GitHub does not start new workflow runs from events raised by GITHUB_TOKEN.
+      #      A merge made with GITHUB_TOKEN would push to develop silently, so publish.yml
+      #      would never run and the BOM would never deploy to GitHub Packages.
+      # The izg-dependency-bot App holds only contents:write, pull_requests:write,
+      # checks:read and statuses:read. It deliberately does NOT hold workflows:write.
+      # checks:read and statuses:read are required by the "gh pr checks" call below.
+      - name: Generate Dependency Bot App Token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.DEPENDENCY_BOT_APP_ID }}
+          private-key: ${{ secrets.DEPENDENCY_BOT_APP_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5
@@ -337,6 +359,22 @@ jobs:
       # POST-UPDATE PHASE: validate and verify fixes
       # -----------------------------------------------------------------------
 
+      # Same gate as publish.yml, run early so a bad bump fails here instead of after the
+      # PR is opened. The "Detect outdated transitive dependencies" step above injects new
+      # dependencyManagement entries, so this is not merely a formality.
+      # Keep in sync with the identical step in publish.yml.
+      - name: Check all dependencyManagement versions are property-backed
+        run: |
+          # Extract only the <dependencyManagement> block and check for hardcoded versions
+          HARDCODED=$(awk '/<dependencyManagement>/,/<\/dependencyManagement>/' pom.xml \
+            | grep -oP '(?<=<version>)(?!\$\{)[^<]+' || true)
+          if [ -n "$HARDCODED" ]; then
+            echo "ERROR: Hardcoded version(s) found in <dependencyManagement>:"
+            echo "$HARDCODED"
+            exit 1
+          fi
+          echo "All dependencyManagement versions are property-backed."
+
       - name: Build and resolve BOM dependencies after updates
         run: |
           mvn -B install -N -DskipDependencyCheck=true -DskipTests=true 2>&1 | tee resolve-post-install.log
@@ -413,14 +451,23 @@ jobs:
         run: |
           REPORT="dependency-check-report-post/dependency-check-report.html"
           if [ -f "$REPORT" ]; then
-            VULN_COUNT=$(grep -oP 'vulnerabilities found: \K[0-9]+' "$REPORT" | head -1 || echo "see report artifact")
-            echo "CVE_SUMMARY_POST=Post-update scan: ${VULN_COUNT} vulnerabilities found. See the \`dependency-check-report-post-update\` artifact." >> $GITHUB_ENV
-            if [ "$VULN_COUNT" -gt 0 ] 2>/dev/null; then
-              echo "HAS_CVES=true" >> $GITHUB_ENV
-              echo "HAS_CHANGES=true" >> $GITHUB_ENV
+            VULN_COUNT=$(grep -oP 'vulnerabilities found: \K[0-9]+' "$REPORT" | head -1 || true)
+            if [ -n "$VULN_COUNT" ]; then
+              echo "CVE_SUMMARY_POST=Post-update scan: ${VULN_COUNT} vulnerabilities found. See the \`dependency-check-report-post-update\` artifact." >> $GITHUB_ENV
+              if [ "$VULN_COUNT" -gt 0 ]; then
+                echo "HAS_CVES=true" >> $GITHUB_ENV
+                echo "HAS_CHANGES=true" >> $GITHUB_ENV
+              fi
+            else
+              # The count is in the report but could not be parsed. An unreadable report is
+              # not the same as a clean one, so record the state as unknown. The merge step
+              # must not auto-merge on an unknown CVE state.
+              echo "CVE_SUMMARY_POST=Post-update scan: the vulnerability count could not be read from the report. See the \`dependency-check-report-post-update\` artifact." >> $GITHUB_ENV
+              echo "CVE_STATUS_UNKNOWN=true" >> $GITHUB_ENV
             fi
           else
             echo "CVE_SUMMARY_POST=Post-update CVE report not found — see workflow logs." >> $GITHUB_ENV
+            echo "CVE_STATUS_UNKNOWN=true" >> $GITHUB_ENV
           fi
 
       - name: Fail build if post-update CVE scan failed or warn if report was not produced
@@ -471,8 +518,11 @@ jobs:
         if: env.HAS_CHANGES == 'true'
         run: |
           BRANCH="dependency-updates-$(date +'%Y%m%d-%H-%M')"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "izg-dependency-bot[bot]"
+          # 321530222 is the bot USER id (gh api '/users/izg-dependency-bot[bot]'), not the
+          # App id. GitHub needs the user id in the noreply address to attribute the commit
+          # to the bot account.
+          git config user.email "321530222+izg-dependency-bot[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
           git add pom.xml
           git commit -m "chore(deps): automated dependency version bumps $(date +'%Y-%m-%d')"
@@ -504,4 +554,58 @@ jobs:
           echo "PR_URL=$PR_URL" >> $GITHUB_ENV
           echo "PR created: $PR_URL"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      # The PR's own build-and-publish check is a second, independent gate. This job has
+      # already run the same validation and CVE scan, so this is deliberate redundancy: it
+      # confirms the committed pom.xml builds from a clean checkout, not just in this job's
+      # working tree. The cost is roughly one extra publish.yml run per night (~2 minutes).
+      #
+      # PRs that still carry CVEs (labelled "security"), and PRs where the CVE state could
+      # not be read, are left open on purpose so a human reviews them.
+      #
+      # The merge is made with the App token, not GITHUB_TOKEN, so the resulting push to
+      # develop does start publish.yml and the BOM is deployed to GitHub Packages.
+      - name: Wait for the PR check, then merge
+        if: env.HAS_CHANGES == 'true' && env.HAS_CVES != 'true' && env.CVE_STATUS_UNKNOWN != 'true'
+        timeout-minutes: 20
+        run: |
+          set -euo pipefail
+
+          if [ -z "${PR_URL:-}" ]; then
+            echo "::error::PR_URL is empty; refusing to merge."
+            exit 1
+          fi
+
+          # gh pr create returns before GitHub registers the check run against the head
+          # SHA. Without this loop, gh exits 1 with "no checks reported" for a check that
+          # is seconds away from appearing. Only that message is retried — a check that
+          # exists but is pending or failing must fall through to --watch below.
+          for _ in $(seq 1 20); do
+            OUT=$(gh pr checks "$PR_URL" 2>&1) && RC=0 || RC=$?
+            if [ "$RC" -ne 1 ] || ! printf '%s' "$OUT" | grep -q 'no checks reported'; then
+              break
+            fi
+            echo "No check run registered yet; waiting 15s."
+            sleep 15
+          done
+
+          # gh classes ACTION_REQUIRED as a failure, not as pending. So if the
+          # first_time_contributors approval gate still applies to this App, this command
+          # fails fast and nothing is merged, rather than blocking for the 6-hour job cap.
+          gh pr checks "$PR_URL" --watch --fail-fast --interval 20
+
+          gh pr merge "$PR_URL" --squash --delete-branch
+          echo "Merged: $PR_URL"
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Report PR left open for review
+        if: env.HAS_CHANGES == 'true' && (env.HAS_CVES == 'true' || env.CVE_STATUS_UNKNOWN == 'true')
+        run: |
+          if [ "${CVE_STATUS_UNKNOWN:-}" = "true" ]; then
+            REASON="the post-update CVE scan result could not be read"
+          else
+            REASON="the post-update CVE scan still reports vulnerabilities"
+          fi
+          echo "::warning::$PR_URL was not merged automatically because $REASON. Review and merge it manually."
