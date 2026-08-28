@@ -33,6 +33,25 @@
             </ignoreVersions>
         </rule>
         <!--
+          Apache Camel: stay within the 4.18.x LTS line.
+          Camel 4.19.0 and later are built against Spring Boot 4.x / Spring Framework 7
+          (4.19.0 and 4.20.0 -> Spring Boot 4.0.x; 4.21.0 and 4.22.0 -> Spring Boot 4.1.x).
+          This BOM pins spring-boot.version on the 3.5.x line, so an automated bump past
+          4.18.x would pull Spring Boot 4 into izgw-transform.
+          Remove this rule when the stack moves to Spring Boot 4.
+        -->
+        <rule groupId="org.apache.camel" artifactId="*">
+            <ignoreVersions>
+                <ignoreVersion type="regex">^(?!4\.18\.).*$</ignoreVersion>
+            </ignoreVersions>
+        </rule>
+        <rule groupId="org.apache.camel.springboot" artifactId="*">
+            <ignoreVersions>
+                <ignoreVersion type="regex">^(?!4\.18\.).*$</ignoreVersion>
+            </ignoreVersions>
+        </rule>
+
+        <!--
           Apache Maven itself: stay within the 3.9.x line.
           The CI/CD pipeline is pinned to 3.9.14; do not suggest 4.x.
         -->
