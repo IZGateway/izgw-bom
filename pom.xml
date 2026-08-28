@@ -72,7 +72,7 @@
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
         <aws-sdk.version>2.54.5</aws-sdk.version>
-        <camel.version>4.18.3</camel.version>
+        <camel.version>4.18.4</camel.version>
         <lombok.version>1.18.46</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
         <bc-fips.version>2.1.3</bc-fips.version>
@@ -563,8 +563,13 @@
                 <artifactId>camel-core</artifactId>
                 <version>${camel.version}</version>
             </dependency>
+            <!-- camel-spring-boot-starter lives under groupId org.apache.camel.springboot
+                 (the camel-spring-boot repo), not org.apache.camel. The org.apache.camel
+                 coordinate exists on Central but stops at 3.0.0-RC3, so versions-maven-plugin
+                 could find no acceptable newer version for ${camel.version} and left the
+                 property frozen. Do not "simplify" the groupId back. -->
             <dependency>
-                <groupId>org.apache.camel</groupId>
+                <groupId>org.apache.camel.springboot</groupId>
                 <artifactId>camel-spring-boot-starter</artifactId>
                 <version>${camel.version}</version>
             </dependency>

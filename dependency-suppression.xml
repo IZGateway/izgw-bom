@@ -153,4 +153,27 @@
         <sha1>cdf7daa908a6601377172e09385eb43425fa9660</sha1>
         <cve>CVE-2026-66299</cve>
     </suppress>
+    <suppress until="2027-02-28Z">
+        <notes><![CDATA[
+        CVE-2026-54285 is a vulnerability in opentelemetry-js (the @opentelemetry/core npm
+        package), not in the Java client. NVD lists it as
+        cpe:2.3:a:opentelemetry:opentelemetry:*:*:*:*:*:node.js:*:* — target_sw is node.js.
+        Dependency-Check derives cpe:2.3:a:opentelemetry:opentelemetry:<version> for the Java
+        jars with no target_sw, and the wildcard matches node.js, so every io.opentelemetry
+        Maven artifact below 2.8.0 matches. This project ships no Node OpenTelemetry.
+
+        This cannot be cleared by upgrading. The Java API is on the 1.x line and the CPE range
+        is "up to (excluding) 2.8.0", so every current and foreseeable Java release matches.
+
+        packageUrl is used instead of sha1 so the entry survives an opentelemetry.version bump.
+        The <cve> element pins it to this one CVE, so no other io.opentelemetry finding is masked.
+
+        Expires 2027-02-28. On that date the finding returns and the nightly PR is labelled
+        "security" and left unmerged. Re-check whether NVD has corrected the CPE to enforce
+        target_sw; if it has, delete this entry, otherwise extend the date.
+        Added: 2026-08-28
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.opentelemetry/.*$</packageUrl>
+        <cve>CVE-2026-54285</cve>
+    </suppress>
 </suppressions>
