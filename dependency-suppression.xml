@@ -208,4 +208,25 @@
         <cve>CVE-2026-59283</cve>
         <cve>CVE-2026-59313</cve>
     </suppress>
+    <suppress until="2027-02-28Z">
+        <notes><![CDATA[
+        CVE-2026-47892 (WebFlux.fn functional-endpoint header-predicate bypass) and CVE-2026-47893
+        (WebFlux HandshakeWebSocketService header leak): both require spring-webflux, which does not
+        resolve on the classpath of izgw-hub, izgw-transform, izgw-core, or v2tofhir — verified
+        independently in all four.
+
+        Flags on spring-core-6.2.19.jar despite webflux being absent because NVD tracks Spring
+        Framework as one CPE product across all modules, not per-artifact — any module-specific
+        CVE at this version matches every Spring jar we have, including spring-core. A Maven
+        <exclusion> can't fix this: it's a version-string match, not a real transitive dependency,
+        and spring-core itself is required by the framework regardless.
+
+        No fix exists on the Spring Framework 6.2.x line; the real fix ships only in 7.0.9, which
+        requires Spring Boot 4.x. Should clear once the Boot 4 upgrade lands.
+        Expires 2027-02-28. Added: 2026-09-02
+        ]]></notes>
+        <sha1>691459d4644894dae8e5c2d9550a4cfb8302f62f</sha1>
+        <cve>CVE-2026-47892</cve>
+        <cve>CVE-2026-47893</cve>
+    </suppress>
 </suppressions>
