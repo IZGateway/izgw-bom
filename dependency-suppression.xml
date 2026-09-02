@@ -194,4 +194,18 @@
         ]]></notes>
         <cve>CVE-2026-66908</cve>
     </suppress>
+    <suppress until="2027-02-28Z">
+        <notes><![CDATA[
+        CVE-2026-59283 (SpEL SimpleEvaluationContext safety-guard bypass) and CVE-2026-59313
+        (functional-web SSE stream corruption): verified not exploitable in izgw-hub,
+        izgw-transform, izgw-core, or v2tofhir — none use SimpleEvaluationContext for SpEL,
+        and none use Spring's functional RouterFunction/HandlerFunction web framework for SSE.
+        No fix exists on the Spring Framework 6.2.x line; the real fix ships only in 7.0.9,
+        which requires Spring Boot 4.x. Should clear once the Boot 4 upgrade lands.
+        Expires 2027-02-28. Added: 2026-09-02
+        ]]></notes>
+        <sha1>691459d4644894dae8e5c2d9550a4cfb8302f62f</sha1>
+        <cve>CVE-2026-59283</cve>
+        <cve>CVE-2026-59313</cve>
+    </suppress>
 </suppressions>
