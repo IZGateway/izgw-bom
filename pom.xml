@@ -7,7 +7,7 @@
 
     <groupId>gov.cdc.izgw</groupId>
     <artifactId>izgw-bom</artifactId>
-    <version>1.14.0</version>
+    <version>1.15.0</version>
     <packaging>pom</packaging>
 
     <name>IZ Gateway Bill of Materials</name>
@@ -18,7 +18,7 @@
         <spring-boot.version>3.5.16</spring-boot.version>
         <spring-framework.version>6.2.19</spring-framework.version>
         <spring-security.version>6.5.11</spring-security.version>
-        <springdoc.version>2.9.0</springdoc.version>
+        <springdoc.version>2.9.1</springdoc.version>
         <swagger-ui.version>5.32.14</swagger-ui.version>
         <tomcat.version>10.1.59</tomcat.version>
         <!-- OpenTelemetry — overrides the 1.49.0 pinned by spring-boot-dependencies (see import below) -->
@@ -32,10 +32,10 @@
         <!-- Netty -->
         <netty.version>4.2.17.Final</netty.version>
         <!-- Protobuf -->
-        <protobuf-java.version>4.36.0</protobuf-java.version>
+        <protobuf-java.version>4.36.1</protobuf-java.version>
         <!-- Logging -->
         <log4j2.version>2.26.1</log4j2.version>
-        <slf4j.version>2.0.18</slf4j.version>
+        <slf4j.version>2.0.19</slf4j.version>
         <logback.version>1.6.3</logback.version>
         <!-- Testing -->
         <junit.version>5.14.4</junit.version>
@@ -57,8 +57,8 @@
         <commons-math3.version>3.6.1</commons-math3.version>
         <!-- HAPI -->
         <hapi-v2.version>2.6.0</hapi-v2.version>
-        <hapi-fhir.version>8.10.1</hapi-fhir.version>
-        <hl7-fhir.version>6.10.2</hl7-fhir.version>
+        <hapi-fhir.version>8.12.0</hapi-fhir.version>
+        <hl7-fhir.version>6.10.4</hl7-fhir.version>
         <opencsv.version>5.12.0</opencsv.version>
         <thymeleaf.version>3.1.5.RELEASE</thymeleaf.version>
         <!-- ulidj -->
@@ -71,9 +71,9 @@
         <nimbus-jose-jwt.version>10.9.1</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.54.4</aws-sdk.version>
-        <camel.version>4.18.3</camel.version>
-        <lombok.version>1.18.46</lombok.version>
+        <aws-sdk.version>2.54.14</aws-sdk.version>
+        <camel.version>4.18.4</camel.version>
+        <lombok.version>1.18.48</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
         <bc-fips.version>2.1.3</bc-fips.version>
         <bcpkix-fips.version>2.1.9</bcpkix-fips.version>
@@ -563,8 +563,13 @@
                 <artifactId>camel-core</artifactId>
                 <version>${camel.version}</version>
             </dependency>
+            <!-- camel-spring-boot-starter lives under groupId org.apache.camel.springboot
+                 (the camel-spring-boot repo), not org.apache.camel. The org.apache.camel
+                 coordinate exists on Central but stops at 3.0.0-RC3, so versions-maven-plugin
+                 could find no acceptable newer version for ${camel.version} and left the
+                 property frozen. Do not "simplify" the groupId back. -->
             <dependency>
-                <groupId>org.apache.camel</groupId>
+                <groupId>org.apache.camel.springboot</groupId>
                 <artifactId>camel-spring-boot-starter</artifactId>
                 <version>${camel.version}</version>
             </dependency>
