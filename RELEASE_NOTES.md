@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.0] - 2026-09-09
+
+### Changes
+- chore(deps): automated dependency updates 2026-09-09 ([#175](https://github.com/IZGateway/izgw-bom/pull/175))
+- chore(deps): automated dependency updates 2026-09-08 ([#174](https://github.com/IZGateway/izgw-bom/pull/174))
+- chore(deps): automated dependency updates 2026-09-04 ([#172](https://github.com/IZGateway/izgw-bom/pull/172))
+- chore(deps): automated dependency updates 2026-09-02 ([#170](https://github.com/IZGateway/izgw-bom/pull/170))
+- fix(security): suppression rule update ([#167](https://github.com/IZGateway/izgw-bom/pull/167))
+- chore(deps): automated dependency updates 2026-09-01 ([#166](https://github.com/IZGateway/izgw-bom/pull/166))
+- chore(deps): bump actions/setup-java from 5 to 6 ([#163](https://github.com/IZGateway/izgw-bom/pull/163))
+- fix(security): suppress camel JWT CVE ([#164](https://github.com/IZGateway/izgw-bom/pull/164))
+- chore(deps): automated dependency updates 2026-08-28 ([#162](https://github.com/IZGateway/izgw-bom/pull/162))
+- fix(ci): correct the Dependency-Check vulnerability-count pattern ([#159](https://github.com/IZGateway/izgw-bom/pull/159))
+- feat(ci): auto-merge dependency-update PRs once checks pass ([#156](https://github.com/IZGateway/izgw-bom/pull/156))
+
 ## [1.14.0] - 2026-08-26
 
 ### Changes
