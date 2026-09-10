@@ -268,4 +268,71 @@
         <cve>CVE-2026-59280</cve>
         <cve>CVE-2026-47888</cve>
     </suppress>
+    <suppress until="2027-02-28Z">
+        <notes><![CDATA[
+        Temporary applicability exception for four CVEs reported against spring-core-6.2.19.jar.
+        Spring Framework 6.2.19 is affected; this is not a claim that the framework is fixed.
+        The affected spring-web, spring-webmvc, and spring-expression artifacts also resolve,
+        so Dependency-Check's product-level match against spring-core is not itself the rationale.
+
+        Independent read-only reviews supplied on 2026-09-10 covered these clean revisions:
+          IZGateway/izgw-hub       f256578617cb4da32e13520f6ae5d2d44420a78a
+          IZGateway/izgw-transform f77807c435a3dc884d66fef2ca297b98a262a86f
+          IZGateway/izgw-core      71443b6b4a33eb5ed1fa80c5de30a56a57814003
+          IZGateway/v2tofhir       aa49acfd68a85c236c334260b9ee7f791a4c3890
+        All four freshly resolved Spring Framework 6.2.19 and Spring Boot 3.5.16.
+        Their selected BOM was 1.16.0-20260910.070543-2; mutable SNAPSHOTs can change
+        the runtime graph without changing these repository revisions.
+
+        CVE-2026-47884 (XsltView SSRF/RCE): NOT REACHABLE in all four reviewed scopes.
+        XsltView exists, but no applicable XSLT view/resolver registration or implicit-view
+        request path was found. Hub/Transform/Core handlers use REST or direct SOAP/servlet
+        response handling; v2tofhir supplies no controller or application bootstrap.
+        Boot's default static-resource /** mapping does not establish XSLT view rendering.
+        https://spring.io/security/cve-2026-47884
+
+        CVE-2026-47885 (PartEvent multipart size-limit bypass): NOT APPLICABLE in all four.
+        PartEventHttpMessageReader exists in spring-web, but WebFlux and Reactor Flux are
+        absent from the reviewed runtime graphs. No inbound PartEvent handling or triggering
+        codec configuration was found; the supplied HTTP paths are synchronous/servlet-based.
+        https://spring.io/security/cve-2026-47885
+
+        CVE-2026-47886 (SpEL power-operator DoS): NOT REACHABLE in all four reviewed scopes.
+        SpEL, arbitrary-precision numeric values, and Camel SpEL in Transform are present.
+        No reviewed request path promotes untrusted input into SpEL expression text.
+        Identified expression sources are annotation metadata and startup configuration;
+        HL7/FHIR parsing and FHIRPath evaluation are not SpEL evaluation.
+        Hub's jwt.test-secret and Transform's spring.database influence expression text
+        through ConditionalOnExpression. These configuration sources MUST remain trusted.
+        https://spring.io/security/cve-2026-47886
+
+        CVE-2026-47889 (Jetty Core reactive SameSite omission): NOT APPLICABLE in all four.
+        Adapter classes exist in spring-web, but WebFlux, Reactor, and Jetty server classes
+        are absent. Hub/Transform explicitly select servlet Tomcat; Core customizes servlet
+        Tomcat and v2tofhir starts no server. The Jetty Core reactive adapter is not selected.
+        https://spring.io/security/cve-2026-47889
+
+        Scope and accepted limits: the user approved this BOM-scan exception on 2026-09-10
+        for the reviewed configurations. Live images, task definitions, mounted configuration,
+        external Camel routes, and consumer-provided extensions were not assessed.
+        Production applicability remains unconfirmed. This assumes trusted deployment
+        configuration and no additional code/routes enabling the CVEs' prerequisites.
+        The SHA1 and CVE selectors restrict the artifact and findings, NOT the consuming
+        application. Do not reuse this rationale for unreviewed consumers or configurations.
+        Reassess on changes to runtime dependencies, XSLT views, reactive multipart handling,
+        expression sources/configuration trust, external routes/extensions, or server adapters.
+
+        The advisories list 6.2.20 as Enterprise Support Only and 7.0.9 as an OSS fix;
+        the public upgrade path requires the coordinated Spring Boot 4 migration.
+        Expiry or a changed JAR hash intentionally restores these findings. Their scanner
+        scores are >= 7, so either can block dependency-update PR creation and publication.
+        Reassess before extending the exception; do not replace it with a Spring-wide CPE rule.
+        Expires 2027-02-28. Added: 2026-09-10
+        ]]></notes>
+        <sha1>691459d4644894dae8e5c2d9550a4cfb8302f62f</sha1>
+        <cve>CVE-2026-47884</cve>
+        <cve>CVE-2026-47885</cve>
+        <cve>CVE-2026-47886</cve>
+        <cve>CVE-2026-47889</cve>
+    </suppress>
 </suppressions>
