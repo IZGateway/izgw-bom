@@ -15,15 +15,6 @@
     
     <properties>
         <!-- Spring Boot and Framework versions -->
-        <!-- IGDD-2353: Boot 4.x / Framework 7.x / Security 7.x. Tomcat 11 is mandatory here, not a
-             preference — Boot 4/Framework 7 require the Servlet 6.1/Jakarta EE 11 baseline, which
-             only Tomcat 11.x implements (10.1.x is Servlet 6.0/Jakarta EE 10). Versions below are
-             pinned to the exact combination spring-boot-dependencies:4.1.1 itself was tested
-             against (verified directly against its published POM), not independently-latest
-             patches of each — EXCEPT tomcat.version, overridden up to 11.0.25 (one patch ahead of
-             Boot 4.1.1's own 11.0.24 pin): 11.0.24 has a disclosed CVSS 7.5 DoS vulnerability
-             (CVE-2026-66299, WebSocket chat example) that fails this repo's OWASP CVSS>=7 gate;
-             11.0.25 fixes it. Same override pattern already used for httpcore.version below. -->
         <spring-boot.version>4.1.1</spring-boot.version>
         <spring-framework.version>7.0.9</spring-framework.version>
         <spring-security.version>7.1.1</spring-security.version>
@@ -81,16 +72,6 @@
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
         <aws-sdk.version>2.54.19</aws-sdk.version>
-        <!-- IGDD-2353: Camel 4.18.x only supports Boot 3; Camel 4.19+ only supports Boot 4 (Boot 3
-             support dropped entirely as of 4.19.0). No Camel version supports both, so this must
-             move in lockstep with spring-boot.version above, never staged separately. Verified
-             directly against Camel's own parent/pom.xml at each release tag: 4.19.0/4.20.0/4.21.0
-             all Boot-4-only. 4.22.0 (used here) targets Boot 4.1.0 (compatible with our 4.1.1) and
-             still depends on Jackson 2 internally (jackson2-version property confirmed in its own
-             parent pom). Corrected up from 4.20.0 during Stage 4: dependency-check found 23 CVEs on
-             camel-core-engine-4.20.0.jar, several critical (up to 9.8) — e.g. CVE-2026-46455
-             affects 4.19.0 through 4.21.0. 4.22.0 is the latest available and was verified empirically
-             (OWASP check clean) rather than assumed from a fix-version announcement. -->
         <camel.version>4.22.0</camel.version>
         <lombok.version>1.18.48</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
@@ -531,20 +512,6 @@
                 <version>${netty.version}</version>
             </dependency>
             <!-- Jackson -->
-            <!-- IGDD-2353: Boot 4 defaults to Jackson 3 (tools.jackson groupId) via its own
-                 jackson-bom import. Real Jackson 3 migration isn't possible yet — confirmed
-                 blocked by four independent upstream projects not ready: HAPI FHIR's Jackson 3
-                 support is unmerged (hapifhir/hapi-fhir PR #8130); jjwt-jackson's split into
-                 Jackson2/Jackson3 modules is in progress (jjwt PR #1032); springdoc-openapi 3.x is
-                 itself still internally built on Jackson 2 despite targeting Boot 4; and Camel
-                 4.19/4.20 (the Boot-4-compatible releases) also still depend on Jackson 2
-                 internally. The explicit com.fasterxml.jackson.* entries below (unchanged from
-                 before this migration) continue to win over Boot's own Jackson 3 default per
-                 Maven's dependency-management precedence — direct <dependency> declarations in
-                 this POM's own dependencyManagement take priority over anything pulled in by a
-                 scope=import BOM, regardless of import order. The spring-boot-jackson2 module
-                 immediately below is the piece that makes Boot 4's own autoconfiguration
-                 cooperate correctly with those Jackson 2 artifacts still on the classpath. -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-jackson2</artifactId>
