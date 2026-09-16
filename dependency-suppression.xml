@@ -14,58 +14,38 @@
     -->
     <suppress>
         <notes><![CDATA[
-        spring-security-core-6.5.9.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
-        which is not in this project.
-        Added: 2026-04-17
+        spring-security-* (all versions): CVE-2018-1258 is an authorization bypass in
+        method security that requires Spring Framework 5.0.5 specifically. NVD pins the
+        vulnerable framework as cpe:2.3:a:vmware:spring_framework:5.0.5 — an exact
+        version, not a range — while encoding the Spring Security side as
+        cpe:2.3:a:pivotal_software:spring_security:*:*:*:*:*:*:*:* with no version bounds
+        at all, because the CVE text reads "when used in combination with any versions of
+        Spring Security". Dependency-Check therefore flags every spring-security JAR ever
+        published, and no upgrade can clear it. This project ships spring-framework 7.0.9
+        (see spring-framework.version in pom.xml), so the vulnerable condition cannot
+        occur.
+
+        GUARD: this suppression is valid only while spring-framework.version is not 5.0.5.
+        If the framework is ever pinned to 5.0.5, remove this rule — the finding would be
+        real.
+
+        Replaces six <sha1>-pinned rules covering spring-security-core/crypto at 6.5.9,
+        6.5.10 and 6.5.11 (added 2026-04-17 through 2026-06-11). Because the CPE is
+        version-wildcard, each Spring Security release produced a fresh false positive and
+        needed a new sha1 rule; all six went stale at once on the Boot 4 upgrade and logged
+        "Suppression Rule had zero matches" in publish run 35104733706, letting the finding
+        fail the --failOnCVSS 7 gate. Matching by filePath regex ends that treadmill and
+        covers sibling artifacts (web, config, oauth2, ...) that carry the same
+        product-level CPE. Scope stays narrow in the dimension that matters: only
+        CVE-2018-1258 is suppressed, so any other CVE on any spring-security JAR still
+        fails the build.
+
+        filePath+cve is the matcher shape known to work in this configuration; <packageUrl>
+        and version-agnostic <cpe> were both verified not to match here (see the
+        protobuf-java note below re: --disableCentral and PURL-less JARs).
+        Added: 2026-09-16 (IGDD-2353)
         ]]></notes>
-        <sha1>a9c374607e9f8593c28dbb93feb4ef1ee32aa527</sha1>
-        <cve>CVE-2018-1258</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        spring-security-crypto-6.5.9.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
-        which is not in this project. The NVD CPE cpe:/a:pivotal_software:spring_security matches all
-        spring-security artifacts including crypto, but the vulnerability is context-specific to framework 5.0.5.
-        Added: 2026-04-20
-        ]]></notes>
-        <sha1>436b30296cf61b7986a9065bf25aee30c60343bd</sha1>
-        <cve>CVE-2018-1258</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        spring-security-crypto-6.5.10.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
-        which is not in this project. The NVD CPE cpe:/a:pivotal_software:spring_security matches all
-        spring-security artifacts including crypto, but the vulnerability is context-specific to framework 5.0.5.
-        Added: 2026-04-20
-        ]]></notes>
-        <sha1>dd72e8572e0b52a5674a2f6db153eb01d286a3f5</sha1>
-        <cve>CVE-2018-1258</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        spring-security-core-6.5.10.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
-        which is not in this project.
-        Added: 2026-04-20
-        ]]></notes>
-        <sha1>049466e9a45ee1918c575c3d7abb0ce68eb622f6</sha1>
-        <cve>CVE-2018-1258</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        spring-security-core-6.5.11.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
-        which is not in this project.
-        Added: 2026-06-11
-        ]]></notes>
-        <sha1>d57309ff65d122a2fa45a3a8f47b01e9183cb6e6</sha1>
-        <cve>CVE-2018-1258</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        spring-security-crypto-6.5.11.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
-        which is not in this project.
-        Added: 2026-06-11
-    ]]></notes>
-        <sha1>2cbc07fa7650ef2f49bcc5ac35e7666c79614f55</sha1>
+        <filePath regex="true">.*spring-security-.*\.jar</filePath>
         <cve>CVE-2018-1258</cve>
     </suppress>
     <suppress>
