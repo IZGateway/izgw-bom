@@ -35,7 +35,7 @@
         <protobuf-java.version>4.36.2</protobuf-java.version>
         <!-- Logging -->
         <log4j2.version>2.26.1</log4j2.version>
-        <slf4j.version>2.0.19</slf4j.version>
+        <slf4j.version>2.0.20</slf4j.version>
         <logback.version>1.6.3</logback.version>
         <!-- Testing -->
         <junit.version>5.14.4</junit.version>
@@ -71,7 +71,7 @@
         <nimbus-jose-jwt.version>10.10</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.55.2</aws-sdk.version>
+        <aws-sdk.version>2.55.3</aws-sdk.version>
         <camel.version>4.22.0</camel.version>
         <lombok.version>1.18.48</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
