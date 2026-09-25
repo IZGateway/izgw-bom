@@ -36,7 +36,7 @@
         <!-- Logging -->
         <log4j2.version>2.26.1</log4j2.version>
         <slf4j.version>2.0.20</slf4j.version>
-        <logback.version>1.6.3</logback.version>
+        <logback.version>1.6.4</logback.version>
         <!-- Testing -->
         <junit.version>5.14.4</junit.version>
         <mockito.version>5.24.0</mockito.version>
@@ -46,7 +46,7 @@
         <!-- HttpCore — overrides the 5.3.6 pinned by spring-boot-dependencies (see dependencyManagement below).
              5.4.3 is the version httpclient5 5.6.2 is built against and the first release clearing an NVD finding
              (affects httpcore5 <= 5.4.2). -->
-        <httpcore.version>5.4.3</httpcore.version>
+        <httpcore.version>5.4.4</httpcore.version>
         <!-- Apache Commons -->
         <commons-lang3.version>3.20.0</commons-lang3.version>
         <commons-io.version>2.22.0</commons-io.version>
@@ -71,7 +71,7 @@
         <nimbus-jose-jwt.version>10.10</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.55.4</aws-sdk.version>
+        <aws-sdk.version>2.55.5</aws-sdk.version>
         <camel.version>4.22.0</camel.version>
         <lombok.version>1.18.48</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
