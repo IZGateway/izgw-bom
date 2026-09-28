@@ -27,7 +27,7 @@
         <jackson.version>2.22.3</jackson.version>
         <jackson-annotations.version>2.22</jackson-annotations.version>
         <!-- STAX Processing (used in HAPI) -->
-        <stax2.version>4.3.0</stax2.version>
+        <stax2.version>4.3.1</stax2.version>
         <saxon.version>12.10</saxon.version>
         <!-- Netty -->
         <netty.version>4.2.18.Final</netty.version>
@@ -71,7 +71,7 @@
         <nimbus-jose-jwt.version>10.10</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.55.5</aws-sdk.version>
+        <aws-sdk.version>2.55.6</aws-sdk.version>
         <camel.version>4.22.0</camel.version>
         <lombok.version>1.18.48</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
