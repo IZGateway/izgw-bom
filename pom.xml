@@ -26,6 +26,9 @@
         <!-- Jackson JSON processing -->
         <jackson.version>2.22.3</jackson.version>
         <jackson-annotations.version>2.22</jackson-annotations.version>
+        <!-- Jackson 3 — Spring Boot 4.1.1 pins 3.1.5, which carries CVEs.
+             All three are fixed in 3.1.6. -->
+        <jackson3.version>3.1.7</jackson3.version>
         <!-- STAX Processing (used in HAPI) -->
         <stax2.version>4.3.1</stax2.version>
         <saxon.version>12.10</saxon.version>
@@ -178,6 +181,30 @@
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-bom</artifactId>
                 <version>${opentelemetry.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Jackson 3 (group tools.jackson). This import overrides the jackson-bom
+                 version that spring-boot-dependencies pins.
+
+                 CAUTION: Keep this import before the spring-boot-dependencies import
+                 below. When two imported BOMs manage the same artifact, the first import
+                 wins. If you move this import after the Spring import, Jackson 3 reverts
+                 to the version that Spring pins, and the build gives no error.
+
+                 A property named jackson-bom.version does not work here, because this BOM
+                 does not extend spring-boot-starter-parent. The OpenTelemetry import above
+                 and the log4j2 entries below have the same limit.
+
+                 Group tools.jackson is Jackson 3. Group com.fasterxml.jackson below is
+                 Jackson 2, and this import does not change it. The one shared artifact is
+                 jackson-annotations. The explicit entry below holds jackson-annotations at
+                 the value of jackson-annotations.version. -->
+            <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson3.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -543,6 +570,23 @@
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-yaml</artifactId>
                 <version>${jackson.version}</version>
+            </dependency>
+
+            <!-- Jackson 3 (group tools.jackson). These entries apply ${jackson3.version}.
+                 The jackson-bom import higher in this file does not reach izgw-hub or
+                 izgw-core. Each of those modules imports spring-boot-starter-parent in its
+                 own dependencyManagement. An import in this BOM cannot win against an
+                 import that the child module declares, but an explicit entry can.
+                 Each new tools.jackson artifact in the build needs an entry here. -->
+            <dependency>
+                <groupId>tools.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tools.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson3.version}</version>
             </dependency>
 
             <dependency>
