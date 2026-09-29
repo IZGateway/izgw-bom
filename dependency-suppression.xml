@@ -14,58 +14,38 @@
     -->
     <suppress>
         <notes><![CDATA[
-        spring-security-core-6.5.9.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
-        which is not in this project.
-        Added: 2026-04-17
+        spring-security-* (all versions): CVE-2018-1258 is an authorization bypass in
+        method security that requires Spring Framework 5.0.5 specifically. NVD pins the
+        vulnerable framework as cpe:2.3:a:vmware:spring_framework:5.0.5 — an exact
+        version, not a range — while encoding the Spring Security side as
+        cpe:2.3:a:pivotal_software:spring_security:*:*:*:*:*:*:*:* with no version bounds
+        at all, because the CVE text reads "when used in combination with any versions of
+        Spring Security". Dependency-Check therefore flags every spring-security JAR ever
+        published, and no upgrade can clear it. This project ships spring-framework 7.0.9
+        (see spring-framework.version in pom.xml), so the vulnerable condition cannot
+        occur.
+
+        GUARD: this suppression is valid only while spring-framework.version is not 5.0.5.
+        If the framework is ever pinned to 5.0.5, remove this rule — the finding would be
+        real.
+
+        Replaces six <sha1>-pinned rules covering spring-security-core/crypto at 6.5.9,
+        6.5.10 and 6.5.11 (added 2026-04-17 through 2026-06-11). Because the CPE is
+        version-wildcard, each Spring Security release produced a fresh false positive and
+        needed a new sha1 rule; all six went stale at once on the Boot 4 upgrade and logged
+        "Suppression Rule had zero matches" in publish run 35104733706, letting the finding
+        fail the --failOnCVSS 7 gate. Matching by filePath regex ends that treadmill and
+        covers sibling artifacts (web, config, oauth2, ...) that carry the same
+        product-level CPE. Scope stays narrow in the dimension that matters: only
+        CVE-2018-1258 is suppressed, so any other CVE on any spring-security JAR still
+        fails the build.
+
+        filePath+cve is the matcher shape known to work in this configuration; <packageUrl>
+        and version-agnostic <cpe> were both verified not to match here (see the
+        protobuf-java note below re: --disableCentral and PURL-less JARs).
+        Added: 2026-09-16 (IGDD-2353)
         ]]></notes>
-        <sha1>a9c374607e9f8593c28dbb93feb4ef1ee32aa527</sha1>
-        <cve>CVE-2018-1258</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        spring-security-crypto-6.5.9.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
-        which is not in this project. The NVD CPE cpe:/a:pivotal_software:spring_security matches all
-        spring-security artifacts including crypto, but the vulnerability is context-specific to framework 5.0.5.
-        Added: 2026-04-20
-        ]]></notes>
-        <sha1>436b30296cf61b7986a9065bf25aee30c60343bd</sha1>
-        <cve>CVE-2018-1258</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        spring-security-crypto-6.5.10.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
-        which is not in this project. The NVD CPE cpe:/a:pivotal_software:spring_security matches all
-        spring-security artifacts including crypto, but the vulnerability is context-specific to framework 5.0.5.
-        Added: 2026-04-20
-        ]]></notes>
-        <sha1>dd72e8572e0b52a5674a2f6db153eb01d286a3f5</sha1>
-        <cve>CVE-2018-1258</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        spring-security-core-6.5.10.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
-        which is not in this project.
-        Added: 2026-04-20
-        ]]></notes>
-        <sha1>049466e9a45ee1918c575c3d7abb0ce68eb622f6</sha1>
-        <cve>CVE-2018-1258</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        spring-security-core-6.5.11.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
-        which is not in this project.
-        Added: 2026-06-11
-        ]]></notes>
-        <sha1>d57309ff65d122a2fa45a3a8f47b01e9183cb6e6</sha1>
-        <cve>CVE-2018-1258</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        spring-security-crypto-6.5.11.jar: CVE-2018-1258 only applies when used with spring-framework 5.0.5,
-        which is not in this project.
-        Added: 2026-06-11
-    ]]></notes>
-        <sha1>2cbc07fa7650ef2f49bcc5ac35e7666c79614f55</sha1>
+        <filePath regex="true">.*spring-security-.*\.jar</filePath>
         <cve>CVE-2018-1258</cve>
     </suppress>
     <suppress>
@@ -267,5 +247,72 @@
         <cve>CVE-2026-59281</cve>
         <cve>CVE-2026-59280</cve>
         <cve>CVE-2026-47888</cve>
+    </suppress>
+    <suppress until="2027-02-28Z">
+        <notes><![CDATA[
+        Temporary applicability exception for four CVEs reported against spring-core-6.2.19.jar.
+        Spring Framework 6.2.19 is affected; this is not a claim that the framework is fixed.
+        The affected spring-web, spring-webmvc, and spring-expression artifacts also resolve,
+        so Dependency-Check's product-level match against spring-core is not itself the rationale.
+
+        Independent read-only reviews supplied on 2026-09-10 covered these clean revisions:
+          IZGateway/izgw-hub       f256578617cb4da32e13520f6ae5d2d44420a78a
+          IZGateway/izgw-transform f77807c435a3dc884d66fef2ca297b98a262a86f
+          IZGateway/izgw-core      71443b6b4a33eb5ed1fa80c5de30a56a57814003
+          IZGateway/v2tofhir       aa49acfd68a85c236c334260b9ee7f791a4c3890
+        All four freshly resolved Spring Framework 6.2.19 and Spring Boot 3.5.16.
+        Their selected BOM was 1.16.0-20260910.070543-2; mutable SNAPSHOTs can change
+        the runtime graph without changing these repository revisions.
+
+        CVE-2026-47884 (XsltView SSRF/RCE): NOT REACHABLE in all four reviewed scopes.
+        XsltView exists, but no applicable XSLT view/resolver registration or implicit-view
+        request path was found. Hub/Transform/Core handlers use REST or direct SOAP/servlet
+        response handling; v2tofhir supplies no controller or application bootstrap.
+        Boot's default static-resource /** mapping does not establish XSLT view rendering.
+        https://spring.io/security/cve-2026-47884
+
+        CVE-2026-47885 (PartEvent multipart size-limit bypass): NOT APPLICABLE in all four.
+        PartEventHttpMessageReader exists in spring-web, but WebFlux and Reactor Flux are
+        absent from the reviewed runtime graphs. No inbound PartEvent handling or triggering
+        codec configuration was found; the supplied HTTP paths are synchronous/servlet-based.
+        https://spring.io/security/cve-2026-47885
+
+        CVE-2026-47886 (SpEL power-operator DoS): NOT REACHABLE in all four reviewed scopes.
+        SpEL, arbitrary-precision numeric values, and Camel SpEL in Transform are present.
+        No reviewed request path promotes untrusted input into SpEL expression text.
+        Identified expression sources are annotation metadata and startup configuration;
+        HL7/FHIR parsing and FHIRPath evaluation are not SpEL evaluation.
+        Hub's jwt.test-secret and Transform's spring.database influence expression text
+        through ConditionalOnExpression. These configuration sources MUST remain trusted.
+        https://spring.io/security/cve-2026-47886
+
+        CVE-2026-47889 (Jetty Core reactive SameSite omission): NOT APPLICABLE in all four.
+        Adapter classes exist in spring-web, but WebFlux, Reactor, and Jetty server classes
+        are absent. Hub/Transform explicitly select servlet Tomcat; Core customizes servlet
+        Tomcat and v2tofhir starts no server. The Jetty Core reactive adapter is not selected.
+        https://spring.io/security/cve-2026-47889
+
+        Scope and accepted limits: the user approved this BOM-scan exception on 2026-09-10
+        for the reviewed configurations. Live images, task definitions, mounted configuration,
+        external Camel routes, and consumer-provided extensions were not assessed.
+        Production applicability remains unconfirmed. This assumes trusted deployment
+        configuration and no additional code/routes enabling the CVEs' prerequisites.
+        The SHA1 and CVE selectors restrict the artifact and findings, NOT the consuming
+        application. Do not reuse this rationale for unreviewed consumers or configurations.
+        Reassess on changes to runtime dependencies, XSLT views, reactive multipart handling,
+        expression sources/configuration trust, external routes/extensions, or server adapters.
+
+        The advisories list 6.2.20 as Enterprise Support Only and 7.0.9 as an OSS fix;
+        the public upgrade path requires the coordinated Spring Boot 4 migration.
+        Expiry or a changed JAR hash intentionally restores these findings. Their scanner
+        scores are >= 7, so either can block dependency-update PR creation and publication.
+        Reassess before extending the exception; do not replace it with a Spring-wide CPE rule.
+        Expires 2027-02-28. Added: 2026-09-10
+        ]]></notes>
+        <sha1>691459d4644894dae8e5c2d9550a4cfb8302f62f</sha1>
+        <cve>CVE-2026-47884</cve>
+        <cve>CVE-2026-47885</cve>
+        <cve>CVE-2026-47886</cve>
+        <cve>CVE-2026-47889</cve>
     </suppress>
 </suppressions>

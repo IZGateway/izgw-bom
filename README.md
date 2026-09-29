@@ -86,8 +86,11 @@ Runs on a nightly schedule (Mon-Fri, 2:00 AM ET / 07:00 UTC) and via `workflow_d
 3. Runs `mvn dependency:resolve` on the validation project to confirm the updated versions still resolve.
 4. Runs OWASP Dependency-Check to scan for CVEs in the dependency tree.
 5. Opens a PR if any updates were applied or CVEs were found. If nothing changed and no CVEs exist, the workflow exits cleanly.
+6. Waits for the PR checks to pass, then squash-merges the PR and deletes its branch if the post-update CVE scan succeeded and its report was readable.
 
 The PR includes a table of version changes, CVE scan results, a list of excluded libraries, and a dependency tree diff showing what changed.
+
+Auto-merge uses the same CVSS threshold as the build: unsuppressed findings with a score of **7 or higher** fail the build and prevent merging. Findings below 7 remain in the report and add the `security` label, but do not block auto-merge. Failed scans, missing or unreadable reports, and failed PR checks prevent auto-merge.
 
 ### Release Workflow (`release.yml` / `_release_common.yml`)
 

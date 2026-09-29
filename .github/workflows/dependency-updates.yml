@@ -572,13 +572,14 @@ jobs:
       # confirms the committed pom.xml builds from a clean checkout, not just in this job's
       # working tree. The cost is roughly one extra publish.yml run per night (~2 minutes).
       #
-      # PRs that still carry CVEs (labelled "security"), and PRs where the CVE state could
-      # not be read, are left open on purpose so a human reviews them.
+      # Use the scan's --failOnCVSS 7 threshold, not the total vulnerability count.
+      # Lower-severity CVEs retain the "security" label but do not block merging.
+      # A failed scan or an unreadable CVE result must never allow an automatic merge.
       #
       # The merge is made with the App token, not GITHUB_TOKEN, so the resulting push to
       # develop does start publish.yml and the BOM is deployed to GitHub Packages.
       - name: Wait for the PR check, then merge
-        if: env.HAS_CHANGES == 'true' && env.HAS_CVES != 'true' && env.CVE_STATUS_UNKNOWN != 'true'
+        if: env.HAS_CHANGES == 'true' && steps.cve-scan-post.outcome == 'success' && env.CVE_STATUS_UNKNOWN != 'true'
         timeout-minutes: 20
         run: |
           set -euo pipefail
@@ -612,11 +613,11 @@ jobs:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - name: Report PR left open for review
-        if: env.HAS_CHANGES == 'true' && (env.HAS_CVES == 'true' || env.CVE_STATUS_UNKNOWN == 'true')
+        if: env.HAS_CHANGES == 'true' && (steps.cve-scan-post.outcome != 'success' || env.CVE_STATUS_UNKNOWN == 'true')
         run: |
           if [ "${CVE_STATUS_UNKNOWN:-}" = "true" ]; then
             REASON="the post-update CVE scan result could not be read"
           else
-            REASON="the post-update CVE scan still reports vulnerabilities"
+            REASON="the post-update CVE scan did not succeed"
           fi
           echo "::warning::$PR_URL was not merged automatically because $REASON. Review and merge it manually."
