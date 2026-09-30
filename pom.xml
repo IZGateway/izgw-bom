@@ -28,7 +28,7 @@
         <jackson-annotations.version>2.22</jackson-annotations.version>
         <!-- Jackson 3 — Spring Boot 4.1.1 pins 3.1.5, which carries CVEs.
              All three are fixed in 3.1.6. -->
-        <jackson3.version>3.1.7</jackson3.version>
+        <jackson3.version>3.2.3</jackson3.version>
         <!-- STAX Processing (used in HAPI) -->
         <stax2.version>4.3.1</stax2.version>
         <saxon.version>12.10</saxon.version>
@@ -51,7 +51,7 @@
              (affects httpcore5 <= 5.4.2). -->
         <httpcore.version>5.4.4</httpcore.version>
         <!-- Apache Commons -->
-        <commons-lang3.version>3.20.0</commons-lang3.version>
+        <commons-lang3.version>3.21.0</commons-lang3.version>
         <commons-io.version>2.22.0</commons-io.version>
         <commons-compress.version>1.28.0</commons-compress.version>
         <commons-text.version>1.15.0</commons-text.version>
@@ -74,7 +74,7 @@
         <nimbus-jose-jwt.version>10.10</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.55.7</aws-sdk.version>
+        <aws-sdk.version>2.55.8</aws-sdk.version>
         <camel.version>4.22.0</camel.version>
         <lombok.version>1.18.48</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
