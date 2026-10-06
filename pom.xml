@@ -33,7 +33,7 @@
         <stax2.version>4.3.1</stax2.version>
         <saxon.version>12.10</saxon.version>
         <!-- Netty -->
-        <netty.version>4.2.18.Final</netty.version>
+        <netty.version>4.2.19.Final</netty.version>
         <!-- Protobuf -->
         <protobuf-java.version>4.36.2</protobuf-java.version>
         <!-- Logging -->
