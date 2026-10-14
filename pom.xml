@@ -69,12 +69,12 @@
         <!-- Validation -->
         <jakarta-validation.version>3.1.1</jakarta-validation.version>
         <javax-activation.version>1.2.0</javax-activation.version>
-        <hibernate-validator.version>8.0.5.Final</hibernate-validator.version>
+        <hibernate-validator.version>8.0.6.Final</hibernate-validator.version>
         <!-- JWT Support -->
         <nimbus-jose-jwt.version>10.10</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.55.15</aws-sdk.version>
+        <aws-sdk.version>2.55.16</aws-sdk.version>
         <camel.version>4.22.0</camel.version>
         <lombok.version>1.18.48</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
