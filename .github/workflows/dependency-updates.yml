@@ -467,7 +467,6 @@ jobs:
               echo "CVE_SUMMARY_POST=Post-update scan: ${VULN_COUNT} vulnerabilities found. See the \`dependency-check-report-post-update\` artifact." >> $GITHUB_ENV
               if [ "$VULN_COUNT" -gt 0 ]; then
                 echo "HAS_CVES=true" >> $GITHUB_ENV
-                echo "HAS_CHANGES=true" >> $GITHUB_ENV
               fi
             else
               # The count is in the report but could not be parsed. An unreadable report is
@@ -528,6 +527,14 @@ jobs:
         id: open-pr
         if: env.HAS_CHANGES == 'true'
         run: |
+          # Guard against an empty commit if HAS_CHANGES was set without a pom.xml edit.
+          # Reset HAS_CHANGES so the merge step, which is also gated on it, is skipped.
+          if git diff --quiet -- pom.xml; then
+            echo "::notice::pom.xml is unchanged; no PR to open."
+            echo "HAS_CHANGES=false" >> $GITHUB_ENV
+            exit 0
+          fi
+
           BRANCH="dependency-updates-$(date +'%Y%m%d-%H-%M')"
           git config user.name "izg-dependency-bot[bot]"
           # 321530222 is the bot USER id (gh api '/users/izg-dependency-bot[bot]'), not the
