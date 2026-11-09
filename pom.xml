@@ -22,13 +22,13 @@
         <swagger-ui.version>5.34.1</swagger-ui.version>
         <tomcat.version>11.0.27</tomcat.version>
         <!-- OpenTelemetry — overrides the 1.49.0 pinned by spring-boot-dependencies (see import below) -->
-        <opentelemetry.version>1.67.0</opentelemetry.version>
+        <opentelemetry.version>1.68.0</opentelemetry.version>
         <!-- Jackson JSON processing -->
-        <jackson.version>2.22.4</jackson.version>
-        <jackson-annotations.version>2.22</jackson-annotations.version>
+        <jackson.version>2.23.0</jackson.version>
+        <jackson-annotations.version>2.23</jackson-annotations.version>
         <!-- Jackson 3 — Spring Boot 4.1.1 pins 3.1.5, which carries CVEs.
              All three are fixed in 3.1.6. -->
-        <jackson3.version>3.2.4</jackson3.version>
+        <jackson3.version>3.3.0</jackson3.version>
         <!-- STAX Processing (used in HAPI) -->
         <stax2.version>4.3.2</stax2.version>
         <saxon.version>12.10</saxon.version>
@@ -63,7 +63,7 @@
         <hapi-fhir.version>8.12.1</hapi-fhir.version>
         <hl7-fhir.version>6.10.4</hl7-fhir.version>
         <opencsv.version>5.12.0</opencsv.version>
-        <thymeleaf.version>3.1.5.RELEASE</thymeleaf.version>
+        <thymeleaf.version>3.1.6.RELEASE</thymeleaf.version>
         <!-- ulidj -->
         <ulidj.version>1.1.0</ulidj.version>
         <!-- Validation -->
@@ -74,7 +74,7 @@
         <nimbus-jose-jwt.version>10.10</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.57.10</aws-sdk.version>
+        <aws-sdk.version>2.57.11</aws-sdk.version>
         <camel.version>4.22.2</camel.version>
         <lombok.version>1.18.48</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
