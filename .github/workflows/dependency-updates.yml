@@ -154,18 +154,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get current date for NVD cache key
-        id: date-pre
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
-      - name: Cache Dependency-Check NVD data (pre-update)
-        uses: actions/cache@v6
-        with:
-          path: ~/dependency-check-data
-          key: dependency-check-nvd-${{ runner.os }}-${{ steps.date-pre.outputs.date }}
-          restore-keys: |
-            dependency-check-nvd-${{ runner.os }}-
-
+      # The pre-update and post-update scans do not use an NVD API key, and they have
+      # no NVD cache step. The action runs the scanner with --noupdate. The scanner uses
+      # the NVD database that is inside the Docker image of the action. The owners of
+      # the action build this image every night with a new database. Thus the runner
+      # does not download NVD data, and it does not need a key.
       - name: Pre-update CVE scan
         id: cve-scan-pre
         uses: dependency-check/Dependency-Check_Action@main
@@ -180,7 +173,6 @@ jobs:
             --suppression /github/workspace/dependency-suppression.xml
             --disableOssIndex
             --failOnCVSS 7
-            --nvdApiKey ${{ secrets.NVDAPIKEY }}
             --disableNuspec
             --disableNugetconf
             --disableAssembly
@@ -420,14 +412,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache Dependency-Check NVD data (post-update)
-        uses: actions/cache@v6
-        with:
-          path: ~/dependency-check-data
-          key: dependency-check-nvd-${{ runner.os }}-${{ steps.date-pre.outputs.date }}
-          restore-keys: |
-            dependency-check-nvd-${{ runner.os }}-
-
       - name: Post-update CVE scan
         id: cve-scan-post
         uses: dependency-check/Dependency-Check_Action@main
@@ -442,7 +426,6 @@ jobs:
             --suppression /github/workspace/dependency-suppression.xml
             --disableOssIndex
             --failOnCVSS 7
-            --nvdApiKey ${{ secrets.NVDAPIKEY }}
             --disableNuspec
             --disableNugetconf
             --disableAssembly
