@@ -19,8 +19,8 @@
         <spring-framework.version>7.0.10</spring-framework.version>
         <spring-security.version>7.1.2</spring-security.version>
         <springdoc.version>3.2.0</springdoc.version>
-        <swagger-ui.version>5.34.1</swagger-ui.version>
-        <tomcat.version>11.0.27</tomcat.version>
+        <swagger-ui.version>5.35.0</swagger-ui.version>
+        <tomcat.version>11.0.29</tomcat.version>
         <!-- OpenTelemetry — overrides the 1.49.0 pinned by spring-boot-dependencies (see import below) -->
         <opentelemetry.version>1.68.0</opentelemetry.version>
         <!-- Jackson JSON processing -->
@@ -39,7 +39,7 @@
         <!-- Logging -->
         <log4j2.version>2.26.1</log4j2.version>
         <slf4j.version>2.0.20</slf4j.version>
-        <logback.version>1.6.6</logback.version>
+        <logback.version>1.6.7</logback.version>
         <!-- Testing -->
         <junit.version>5.14.4</junit.version>
         <mockito.version>5.24.0</mockito.version>
@@ -74,7 +74,7 @@
         <nimbus-jose-jwt.version>10.10</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.59.0</aws-sdk.version>
+        <aws-sdk.version>2.59.1</aws-sdk.version>
         <camel.version>4.22.2</camel.version>
         <lombok.version>1.18.48</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
