@@ -12,6 +12,7 @@
 
     <name>IZ Gateway Bill of Materials</name>
     <description>Bill of Materials POM for IZ Gateway projects containing dependency management</description>
+    <url>https://github.com/IZGateway/izgw-bom</url>
     
     <properties>
         <!-- Build encoding: maven-resources-plugin warns when no encoding is set -->
