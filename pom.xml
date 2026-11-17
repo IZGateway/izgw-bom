@@ -33,7 +33,7 @@
         <stax2.version>4.3.2</stax2.version>
         <saxon.version>12.10</saxon.version>
         <!-- Netty -->
-        <netty.version>4.2.20.Final</netty.version>
+        <netty.version>4.2.21.Final</netty.version>
         <!-- Protobuf -->
         <protobuf-java.version>4.36.2</protobuf-java.version>
         <!-- Logging -->
@@ -74,7 +74,7 @@
         <nimbus-jose-jwt.version>10.10</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.59.1</aws-sdk.version>
+        <aws-sdk.version>2.59.2</aws-sdk.version>
         <camel.version>4.22.2</camel.version>
         <lombok.version>1.18.48</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
