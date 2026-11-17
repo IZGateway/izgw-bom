@@ -12,8 +12,11 @@
 
     <name>IZ Gateway Bill of Materials</name>
     <description>Bill of Materials POM for IZ Gateway projects containing dependency management</description>
+    <url>https://github.com/IZGateway/izgw-bom</url>
     
     <properties>
+        <!-- Build encoding: maven-resources-plugin warns when no encoding is set -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Spring Boot and Framework versions -->
         <spring-boot.version>4.1.2</spring-boot.version>
         <spring-framework.version>7.0.10</spring-framework.version>
