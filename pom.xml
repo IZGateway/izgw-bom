@@ -51,7 +51,8 @@
         <httpclient.version>5.6.5</httpclient.version>
         <!-- HttpCore — overrides the 5.3.6 pinned by spring-boot-dependencies (see dependencyManagement below).
              5.4.3 is the version httpclient5 5.6.2 is built against and the first release clearing an NVD finding
-             (affects httpcore5 <= 5.4.2). -->
+             (affects httpcore5 <= 5.4.2).
+             5.5 is skipped by versions-rules.xml (Dependency-Check false positive); 5.5.1+ is allowed. -->
         <httpcore.version>5.4.4</httpcore.version>
         <!-- Apache Commons -->
         <commons-lang3.version>3.22.0</commons-lang3.version>
