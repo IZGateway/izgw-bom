@@ -10,6 +10,8 @@ on:
 # token. GITHUB_TOKEN is left with read access only, for Maven dependency resolution.
 permissions:
   contents: read
+  # actions: read lets the Jira report step look up which step failed (IGDD-2768).
+  actions: read
 
 env:
   # Pulls the vulnerability count out of the Dependency-Check HTML report. As of
@@ -603,6 +605,7 @@ jobs:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - name: Report PR left open for review
+        id: left-open
         if: env.HAS_CHANGES == 'true' && (steps.cve-scan-post.outcome != 'success' || env.CVE_STATUS_UNKNOWN == 'true')
         run: |
           if [ "${CVE_STATUS_UNKNOWN:-}" = "true" ]; then
@@ -611,3 +614,19 @@ jobs:
             REASON="the post-update CVE scan did not succeed"
           fi
           echo "::warning::$PR_URL was not merged automatically because $REASON. Review and merge it manually."
+
+      # Files an IGDD Bug when the nightly dependency PR cannot merge (IGDD-2768): when
+      # the run fails, or when the PR is left open above (the run stays green then).
+      # The same failure while that ticket is open adds a comment instead of a new
+      # ticket. Scheduled runs only, so manual runs never file tickets. Must stay the
+      # last step: on a failure it reports the last failed step. The left-open case
+      # passes a fixed reason, so it always maps to one ticket.
+      - name: Report failure to Jira
+        if: github.event_name == 'schedule' && (failure() || steps.left-open.outcome == 'success')
+        uses: IZGateway/izg-dependency-scripts/.github/actions/report-ci-failure@v1
+        with:
+          component: BOM
+          jira-api-url: ${{ secrets.JIRA_API_URL }}
+          jira-auth: ${{ secrets.JIRA_API_AUTH_BASE64 }}
+          pr-url: ${{ env.PR_URL }}
+          reason: ${{ steps.left-open.outcome == 'success' && 'Dependency PR left open for manual review (post-update CVE scan result unavailable)' || '' }}
