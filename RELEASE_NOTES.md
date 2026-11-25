@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.0] - 2026-11-25
+
+### Changes
+- ci: report nightly dependency-update failures to Jira (IGDD-2768) ([#230](https://github.com/IZGateway/izgw-bom/pull/230))
+- IGDD-2974: Remove dead NVD cache steps and unused NVD API key from CVE scans ([#223](https://github.com/IZGateway/izgw-bom/pull/223))
+- chore: Bump camel to 4.22.2 ([#217](https://github.com/IZGateway/izgw-bom/pull/217))
+
 ## [1.18.0] - 2026-11-03
 
 ### Changes
