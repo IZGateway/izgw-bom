@@ -7,39 +7,42 @@
 
     <groupId>gov.cdc.izgw</groupId>
     <artifactId>izgw-bom</artifactId>
-    <version>1.18.0</version>
+    <version>1.19.0</version>
     <packaging>pom</packaging>
 
     <name>IZ Gateway Bill of Materials</name>
     <description>Bill of Materials POM for IZ Gateway projects containing dependency management</description>
+    <url>https://github.com/IZGateway/izgw-bom</url>
     
     <properties>
+        <!-- Build encoding: maven-resources-plugin warns when no encoding is set -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Spring Boot and Framework versions -->
-        <spring-boot.version>4.1.2</spring-boot.version>
-        <spring-framework.version>7.0.10</spring-framework.version>
-        <spring-security.version>7.1.2</spring-security.version>
-        <springdoc.version>3.2.0</springdoc.version>
-        <swagger-ui.version>5.34.1</swagger-ui.version>
-        <tomcat.version>11.0.27</tomcat.version>
+        <spring-boot.version>4.2.0</spring-boot.version>
+        <spring-framework.version>7.1.0</spring-framework.version>
+        <spring-security.version>7.2.0</spring-security.version>
+        <springdoc.version>3.2.1</springdoc.version>
+        <swagger-ui.version>5.36.0</swagger-ui.version>
+        <tomcat.version>11.0.29</tomcat.version>
         <!-- OpenTelemetry — overrides the 1.49.0 pinned by spring-boot-dependencies (see import below) -->
-        <opentelemetry.version>1.67.0</opentelemetry.version>
+        <opentelemetry.version>1.68.0</opentelemetry.version>
         <!-- Jackson JSON processing -->
-        <jackson.version>2.22.4</jackson.version>
-        <jackson-annotations.version>2.22</jackson-annotations.version>
+        <jackson.version>2.23.0</jackson.version>
+        <jackson-annotations.version>2.23</jackson-annotations.version>
         <!-- Jackson 3 — Spring Boot 4.1.1 pins 3.1.5, which carries CVEs.
              All three are fixed in 3.1.6. -->
-        <jackson3.version>3.2.4</jackson3.version>
+        <jackson3.version>3.3.0</jackson3.version>
         <!-- STAX Processing (used in HAPI) -->
         <stax2.version>4.3.2</stax2.version>
         <saxon.version>12.10</saxon.version>
         <!-- Netty -->
-        <netty.version>4.2.20.Final</netty.version>
+        <netty.version>4.2.21.Final</netty.version>
         <!-- Protobuf -->
         <protobuf-java.version>4.36.2</protobuf-java.version>
         <!-- Logging -->
         <log4j2.version>2.26.1</log4j2.version>
         <slf4j.version>2.0.20</slf4j.version>
-        <logback.version>1.6.6</logback.version>
+        <logback.version>1.6.8</logback.version>
         <!-- Testing -->
         <junit.version>5.14.4</junit.version>
         <mockito.version>5.24.0</mockito.version>
@@ -48,10 +51,11 @@
         <httpclient.version>5.6.5</httpclient.version>
         <!-- HttpCore — overrides the 5.3.6 pinned by spring-boot-dependencies (see dependencyManagement below).
              5.4.3 is the version httpclient5 5.6.2 is built against and the first release clearing an NVD finding
-             (affects httpcore5 <= 5.4.2). -->
+             (affects httpcore5 <= 5.4.2).
+             5.5 is skipped by versions-rules.xml (Dependency-Check false positive); 5.5.1+ is allowed. -->
         <httpcore.version>5.4.4</httpcore.version>
         <!-- Apache Commons -->
-        <commons-lang3.version>3.21.0</commons-lang3.version>
+        <commons-lang3.version>3.22.0</commons-lang3.version>
         <commons-io.version>2.22.0</commons-io.version>
         <commons-compress.version>1.28.0</commons-compress.version>
         <commons-text.version>1.15.0</commons-text.version>
@@ -63,7 +67,7 @@
         <hapi-fhir.version>8.12.1</hapi-fhir.version>
         <hl7-fhir.version>6.10.4</hl7-fhir.version>
         <opencsv.version>5.12.0</opencsv.version>
-        <thymeleaf.version>3.1.5.RELEASE</thymeleaf.version>
+        <thymeleaf.version>3.1.7.RELEASE</thymeleaf.version>
         <!-- ulidj -->
         <ulidj.version>1.1.0</ulidj.version>
         <!-- Validation -->
@@ -74,8 +78,8 @@
         <nimbus-jose-jwt.version>10.10</nimbus-jose-jwt.version>
         <io-jsonwebtoken.version>0.13.0</io-jsonwebtoken.version>
         <mysql.version>9.7.0</mysql.version>
-        <aws-sdk.version>2.57.8</aws-sdk.version>
-        <camel.version>4.22.0</camel.version>
+        <aws-sdk.version>2.59.9</aws-sdk.version>
+        <camel.version>4.22.2</camel.version>
         <lombok.version>1.18.48</lombok.version>
         <!-- Bouncy Castle FIPS — versions managed manually; excluded from automated updates -->
         <bc-fips.version>2.1.3</bc-fips.version>
